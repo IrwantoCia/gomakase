@@ -1,0 +1,46 @@
+function login(email, password) {
+    return fetch('/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.error(response);
+            throw new Error('Login failed');
+        }
+        return response.json();
+    })
+    .then(data => {
+        return data;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return error;
+    });
+}
+
+function register(fullName, username, email, password) {
+    return fetch('/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            fullName, 
+            username, 
+            email, 
+            password,
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        return data;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        return error;
+    });
+}

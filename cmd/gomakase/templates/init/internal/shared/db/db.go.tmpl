@@ -1,0 +1,62 @@
+package db
+
+import (
+	"fmt"
+
+	"{{.ProjectName}}/internal/shared/logger"
+
+	"{{.ProjectName}}/internal/shared/config"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
+
+const sqliteFile = "application.db"
+
+type DB struct {
+	DB     *gorm.DB
+	logger logger.Logger
+}
+
+func ConnectToDatabase(dbConfig config.DatabaseConfig, logger logger.Logger) (*DB, error) {
+	var db *gorm.DB
+	var err error
+
+	switch dbConfig.Driver {
+	case "postgres":
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s",
+			dbConfig.Host, dbConfig.User, dbConfig.Password, dbConfig.Name, dbConfig.Port, dbConfig.SSLMode)
+		logger.Info("Connected to the database using PostgreSQL", "dsn", dsn)
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	case "sqlite":
+		logger.Info("Connected to the database using SQLite", "file", sqliteFile)
+		db, err = gorm.Open(sqlite.Open(sqliteFile), &gorm.Config{})
+	default:
+		return nil, fmt.Errorf("invalid database driver: %s", dbConfig.Driver)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to the database: %w", err)
+	}
+
+	return &DB{DB: db, logger: logger}, nil
+}
+
+func (db *DB) AutoMigrateSchemas(schemas ...interface{}) {
+	db.logger.Info("Starting database auto-migration...")
+	if err := db.DB.AutoMigrate(schemas...); err != nil {
+		db.logger.Fatal("Database auto-migration failed: %v", err)
+	}
+	db.logger.Info("Database auto-migration completed successfully.")
+}
+
+func (db *DB) CloseDatabase() {
+	sqlDB, err := db.DB.DB()
+	if err != nil {
+		db.logger.Error("Error getting underlying SQL DB: %v", err)
+		return
+	}
+	sqlDB.Close()
+	db.logger.Info("Database connection closed.")
+}

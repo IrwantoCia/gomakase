@@ -1,0 +1,10 @@
+package domain
+
+import "errors"
+
+var (
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrUserIDRequired     = errors.New("userID is required")
+	ErrTokenRequired      = errors.New("token is required")
+	ErrExpiresAtRequired  = errors.New("expiresAt is required")
+)

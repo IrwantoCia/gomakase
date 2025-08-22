@@ -1,0 +1,13 @@
+package delivery
+
+import (
+	"{{.ProjectName}}/internal/shared/logger"
+)
+
+type {{.ContextName}}Handler struct {
+	logger      logger.Logger
+}
+
+func New{{.ContextName}}Handler(logger logger.Logger) *{{.ContextName}}Handler {
+	return &{{.ContextName}}Handler{logger: logger}
+}

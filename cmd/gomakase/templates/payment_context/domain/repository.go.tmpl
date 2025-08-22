@@ -1,0 +1,7 @@
+package domain
+
+type PaymentRepository interface {
+	Save(payment *Payment) error
+	FindByID(id string) (*Payment, error)
+	FindByInvoiceNumber(invoiceNumber string) (*Payment, error)
+}

@@ -1,0 +1,12 @@
+package infrastructure
+
+import "time"
+
+type AuthSchema struct {
+	AuthID    string `gorm:"type:uuid;primaryKey"`
+	UserID    string `gorm:"type:uuid;unique"`
+	Token     string
+	ExpiresAt time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}

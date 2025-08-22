@@ -1,0 +1,87 @@
+package domain
+
+import (
+	"time"
+)
+
+type PaymentRequestDTO struct {
+	InvoiceID string
+	Amount    float64
+}
+
+type CreatePaymentRequestDTO struct {
+	PaymentID            string
+	OrderID              string
+	InvoiceNumber        string
+	Status               string
+	Amount               float64
+	Currency             string
+	GatewayTransactionID string
+	PaymentMethod        string
+	CreatedAt            time.Time
+	RawPaymentRecords    []*RawPaymentRecord
+}
+
+type DokuPaymentCallbackDTO struct {
+	Transaction struct {
+		Status            string `json:"status"`
+		Date              string `json:"date"`
+		OriginalRequestID string `json:"original_request_id"`
+	} `json:"transaction"`
+	Order struct {
+		Amount        float64 `json:"amount"`
+		InvoiceNumber string  `json:"invoice_number"`
+	} `json:"order"`
+}
+
+type DokuPaymentResponseDTO struct {
+	Message  []string `json:"message"`
+	Response struct {
+		Order struct {
+			Amount        string `json:"amount"`
+			InvoiceNumber string `json:"invoice_number"`
+			Currency      string `json:"currency"`
+			SessionID     string `json:"session_id"`
+			CallbackURL   string `json:"callback_url"`
+			LineItems     []struct {
+				Name     string `json:"name"`
+				Quantity int    `json:"quantity"`
+				Price    string `json:"price"`
+			} `json:"line_items"`
+		} `json:"order"`
+		Payment struct {
+			PaymentMethodTypes []string `json:"payment_method_types"`
+			PaymentDueDate     int      `json:"payment_due_date"`
+			TokenID            string   `json:"token_id"`
+			URL                string   `json:"url"`
+			ExpiredDate        string   `json:"expired_date"`
+			ExpiredDatetime    string   `json:"expired_datetime"`
+		} `json:"payment"`
+		Customer struct {
+			Email   string `json:"email"`
+			Phone   string `json:"phone"`
+			Name    string `json:"name"`
+			Address string `json:"address"`
+			Country string `json:"country"`
+		} `json:"customer"`
+		AdditionalInfo struct {
+			Origin struct {
+				Product   string `json:"product"`
+				System    string `json:"system"`
+				ApiFormat string `json:"apiFormat"`
+				Source    string `json:"source"`
+			} `json:"origin"`
+			LineItems []struct {
+				Name     string `json:"name"`
+				Quantity int    `json:"quantity"`
+				Price    string `json:"price"`
+			} `json:"line_items"`
+		} `json:"additional_info"`
+		Headers struct {
+			RequestID string `json:"request_id"`
+			Signature string `json:"signature"`
+			Date      string `json:"date"`
+			ClientID  string `json:"client_id"`
+		} `json:"headers"`
+	} `json:"response"`
+}

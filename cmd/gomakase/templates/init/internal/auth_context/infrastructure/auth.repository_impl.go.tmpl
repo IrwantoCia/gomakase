@@ -1,0 +1,78 @@
+package infrastructure
+
+import (
+	"{{.ProjectName}}/internal/auth_context/domain"
+	"{{.ProjectName}}/internal/shared/logger"
+
+	"errors"
+
+	"gorm.io/gorm"
+
+	"github.com/google/uuid"
+)
+
+type AuthRepositoryImpl struct {
+	db     *gorm.DB
+	logger logger.Logger
+}
+
+func NewAuthRepositoryImpl(db *gorm.DB, logger logger.Logger) *AuthRepositoryImpl {
+	return &AuthRepositoryImpl{db: db, logger: logger}
+}
+
+func (r *AuthRepositoryImpl) Save(auth *domain.Auth) error {
+	if auth.AuthID == "" {
+		auth.AuthID = uuid.New().String()
+	}
+
+	schema := &AuthSchema{
+		AuthID:    auth.AuthID,
+		UserID:    auth.UserID,
+		Token:     auth.Token,
+		ExpiresAt: auth.ExpiresAt,
+		CreatedAt: auth.CreatedAt,
+	}
+
+	return r.db.Save(schema).Error
+}
+
+func (r *AuthRepositoryImpl) FindByID(id string) (*domain.Auth, error) {
+	var auth AuthSchema
+	if err := r.db.Where("auth_id = ?", id).First(&auth).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &domain.Auth{
+		AuthID:    auth.AuthID,
+		UserID:    auth.UserID,
+		Token:     auth.Token,
+		ExpiresAt: auth.ExpiresAt,
+		CreatedAt: auth.CreatedAt,
+	}, nil
+}
+
+func (r *AuthRepositoryImpl) FindByUserID(userID string) (*domain.Auth, error) {
+	var auth AuthSchema
+	if err := r.db.Where("user_id = ?", userID).First(&auth).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &domain.Auth{
+		AuthID:    auth.AuthID,
+		UserID:    auth.UserID,
+		Token:     auth.Token,
+		ExpiresAt: auth.ExpiresAt,
+		CreatedAt: auth.CreatedAt,
+	}, nil
+}
+
+func (r *AuthRepositoryImpl) Remove(auth *domain.Auth) error {
+	return r.db.Delete(&AuthSchema{
+		AuthID: auth.AuthID,
+	}).Error
+}

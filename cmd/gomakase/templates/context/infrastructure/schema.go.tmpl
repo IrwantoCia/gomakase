@@ -1,0 +1,9 @@
+package infrastructure
+
+import "time"
+
+type {{.ContextName}}Schema struct {
+	{{.ContextName}}ID    string `gorm:"type:uuid;primaryKey"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}

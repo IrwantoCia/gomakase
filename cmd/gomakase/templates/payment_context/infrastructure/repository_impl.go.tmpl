@@ -1,0 +1,160 @@
+package infrastructure
+
+import (
+	"{{.ProjectName}}/internal/payment_context/domain"
+	"{{.ProjectName}}/internal/shared/logger"
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
+
+type PaymentRepositoryImpl struct {
+	db     *gorm.DB
+	logger logger.Logger
+}
+
+func NewPaymentRepositoryImpl(db *gorm.DB, logger logger.Logger) *PaymentRepositoryImpl {
+	return &PaymentRepositoryImpl{db: db, logger: logger}
+}
+
+func (r *PaymentRepositoryImpl) Save(payment *domain.Payment) error {
+	if payment.PaymentID == "" {
+		payment.PaymentID = uuid.New().String()
+	}
+
+	// create raw payment records
+	for _, rawPaymentRecord := range payment.RawPaymentRecords {
+		rawPaymentRecordSchema := &RawPaymentRecordSchema{
+			RawPaymentRecordID: rawPaymentRecord.RawPaymentRecordID,
+			Content:            rawPaymentRecord.Content,
+			CreatedAt:          rawPaymentRecord.CreatedAt,
+		}
+		if err := r.db.Save(rawPaymentRecordSchema).Error; err != nil {
+			r.logger.Error("failed to create raw payment record", "error", err)
+			return err
+		}
+	}
+
+	paymentSchema := &PaymentSchema{
+		PaymentID:            payment.PaymentID,
+		OrderID:              payment.OrderID,
+		InvoiceNumber:        payment.InvoiceNumber,
+		Status:               payment.Status,
+		Amount:               payment.Amount,
+		Currency:             payment.Currency,
+		GatewayTransactionID: payment.GatewayTransactionID,
+		PaymentMethod:        payment.PaymentMethod,
+		CreatedAt:            payment.CreatedAt,
+		UpdatedAt:            time.Now(),
+	}
+
+	if err := r.db.Save(paymentSchema).Error; err != nil {
+		r.logger.Error("failed to create payment", "error", err)
+		return err
+	}
+
+	// create payment records
+	for _, rawPaymentRecord := range payment.RawPaymentRecords {
+		paymentRecordSchema := &PaymentRecordSchema{
+			PaymentID:          payment.PaymentID,
+			RawPaymentRecordID: rawPaymentRecord.RawPaymentRecordID,
+		}
+		if err := r.db.Save(paymentRecordSchema).Error; err != nil {
+			r.logger.Error("failed to create payment record", "error", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *PaymentRepositoryImpl) FindByID(paymentID string) (*domain.Payment, error) {
+	paymentSchema := &PaymentSchema{}
+
+	if err := r.db.Where("payment_id = ?", paymentID).First(paymentSchema).Error; err != nil {
+		r.logger.Error("failed to find payment", "error", err)
+		return nil, err
+	}
+
+	// find payment records using payment id
+	paymentRecords := []*PaymentRecordSchema{}
+	if err := r.db.Where("payment_id = ?", paymentID).Find(&paymentRecords).Error; err != nil {
+		r.logger.Error("failed to find payment records", "error", err)
+		return nil, err
+	}
+
+	rawPaymentRecords := []*domain.RawPaymentRecord{}
+	for _, paymentRecord := range paymentRecords {
+		rawPaymentRecordSchema := &RawPaymentRecordSchema{}
+		if err := r.db.Where("raw_payment_record_id = ?", paymentRecord.RawPaymentRecordID).First(rawPaymentRecordSchema).Error; err != nil {
+			r.logger.Error("failed to find raw payment record", "error", err)
+			return nil, err
+		}
+		rawPaymentRecords = append(rawPaymentRecords, &domain.RawPaymentRecord{
+			RawPaymentRecordID: rawPaymentRecordSchema.RawPaymentRecordID,
+			Content:            rawPaymentRecordSchema.Content,
+			CreatedAt:          rawPaymentRecordSchema.CreatedAt,
+		})
+	}
+
+	payment := &domain.Payment{
+		PaymentID:            paymentSchema.PaymentID,
+		OrderID:              paymentSchema.OrderID,
+		InvoiceNumber:        paymentSchema.InvoiceNumber,
+		Status:               paymentSchema.Status,
+		Amount:               paymentSchema.Amount,
+		Currency:             paymentSchema.Currency,
+		GatewayTransactionID: paymentSchema.GatewayTransactionID,
+		PaymentMethod:        paymentSchema.PaymentMethod,
+		RawPaymentRecords:    rawPaymentRecords,
+		CreatedAt:            paymentSchema.CreatedAt,
+	}
+
+	return payment, nil
+}
+
+func (r *PaymentRepositoryImpl) FindByInvoiceNumber(invoiceNumber string) (*domain.Payment, error) {
+	paymentSchema := &PaymentSchema{}
+
+	if err := r.db.Where("invoice_number = ?", invoiceNumber).First(paymentSchema).Error; err != nil {
+		r.logger.Error("failed to find payment", "error", err)
+		return nil, err
+	}
+
+	// find payment records using payment id
+	paymentRecords := []*PaymentRecordSchema{}
+	if err := r.db.Where("payment_id = ?", paymentSchema.PaymentID).Find(&paymentRecords).Error; err != nil {
+		r.logger.Error("failed to find payment records", "error", err)
+		return nil, err
+	}
+
+	rawPaymentRecords := []*domain.RawPaymentRecord{}
+	for _, paymentRecord := range paymentRecords {
+		rawPaymentRecordSchema := &RawPaymentRecordSchema{}
+		if err := r.db.Where("raw_payment_record_id = ?", paymentRecord.RawPaymentRecordID).First(rawPaymentRecordSchema).Error; err != nil {
+			r.logger.Error("failed to find raw payment record", "error", err)
+			return nil, err
+		}
+		rawPaymentRecords = append(rawPaymentRecords, &domain.RawPaymentRecord{
+			RawPaymentRecordID: rawPaymentRecordSchema.RawPaymentRecordID,
+			Content:            rawPaymentRecordSchema.Content,
+			CreatedAt:          rawPaymentRecordSchema.CreatedAt,
+		})
+	}
+
+	payment := &domain.Payment{
+		PaymentID:            paymentSchema.PaymentID,
+		OrderID:              paymentSchema.OrderID,
+		InvoiceNumber:        paymentSchema.InvoiceNumber,
+		Status:               paymentSchema.Status,
+		Amount:               paymentSchema.Amount,
+		Currency:             paymentSchema.Currency,
+		GatewayTransactionID: paymentSchema.GatewayTransactionID,
+		PaymentMethod:        paymentSchema.PaymentMethod,
+		RawPaymentRecords:    rawPaymentRecords,
+		CreatedAt:            paymentSchema.CreatedAt,
+	}
+
+	return payment, nil
+}

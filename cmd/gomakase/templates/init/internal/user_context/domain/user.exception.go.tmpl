@@ -1,0 +1,15 @@
+package domain
+
+import "errors"
+
+var (
+	ErrUserAlreadyExists   = errors.New("user already exists")
+	ErrUserNotFound        = errors.New("user not found")
+	ErrUserNotActive       = errors.New("user is not active")
+	ErrUserInvalid         = errors.New("user is invalid")
+	ErrUserInvalidEmail    = errors.New("user email is invalid")
+	ErrUserInvalidPassword = errors.New("user password is invalid")
+	ErrUserInvalidUserID   = errors.New("user userID is invalid")
+	ErrUserInvalidName     = errors.New("user name is invalid")
+	ErrUserInvalidRole     = errors.New("user role is invalid")
+)

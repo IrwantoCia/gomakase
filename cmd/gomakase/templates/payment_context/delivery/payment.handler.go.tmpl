@@ -1,0 +1,51 @@
+package delivery
+
+import (
+	"net/http"
+	"{{.ProjectName}}/internal/payment_context/application"
+	"{{.ProjectName}}/internal/shared/logger"
+
+	"github.com/gin-gonic/gin"
+)
+
+type PaymentHandler struct {
+	logger         logger.Logger
+	paymentService application.PaymentService
+}
+
+func NewPaymentHandler(logger logger.Logger, paymentService application.PaymentService) *PaymentHandler {
+	return &PaymentHandler{logger: logger, paymentService: paymentService}
+}
+
+func (h *PaymentHandler) GeneratePaymentLink(c *gin.Context) {
+	paymentURL, _, err := h.paymentService.CreatePayment()
+	if err != nil {
+		h.logger.Error("Failed to create payment", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"payment_url": paymentURL,
+	})
+}
+
+func (h *PaymentHandler) ProcessPaymentCallback(c *gin.Context) {
+	bodyBytes, err := c.GetRawData()
+	if err != nil {
+		h.logger.Error("Failed to get raw data", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	bodyString := string(bodyBytes)
+
+	err = h.paymentService.ProcessPaymentCallback(bodyString)
+	if err != nil {
+		h.logger.Error("Failed to process payment callback", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Payment callback processed successfully"})
+}

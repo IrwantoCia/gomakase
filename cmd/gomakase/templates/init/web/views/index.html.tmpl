@@ -1,0 +1,146 @@
+<!doctype html>
+
+<html data-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/css/output.css">
+        <title>{{.title}}</title>
+    </head>
+
+    <body class="min-h-screen bg-base-100">
+        <!-- Navigation -->
+        <div class="navbar bg-base-100 border-b border-base-200">
+            <div class="flex-1">
+                <a class="btn btn-ghost text-xl font-bold text-primary">Bootstrap App</a>
+            </div>
+            <div class="flex-none">
+                <ul class="menu menu-horizontal px-1">
+                    <li><a class="btn btn-ghost">Home</a></li>
+                    <li><a class="btn btn-ghost">About</a></li>
+                    <li><a class="btn btn-ghost">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <div class="hero min-h-[70vh] bg-gradient-to-br from-primary/10 to-secondary/10">
+            <div class="hero-content text-center">
+                <div class="max-w-md">
+                    <h1 class="text-5xl font-bold text-base-content mb-6">
+                        Welcome to <span class="text-primary">Bootstrap</span>
+                    </h1>
+                    <p class="text-lg text-base-content/70 mb-8">
+                        A modern, clean, and elegant web application built with Go and styled with DaisyUI. 
+                        Experience the perfect blend of functionality and beautiful design.
+                    </p>
+                    <div class="space-x-4">
+                        <button class="btn btn-primary btn-lg">Get Started</button>
+                        <button class="btn btn-outline btn-lg">Learn More</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="py-16 bg-base-100">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-base-content mb-4">Why Choose Bootstrap?</h2>
+                    <p class="text-base-content/70 max-w-2xl mx-auto">
+                        Our application offers powerful features designed to enhance your experience
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- Feature 1 -->
+                    <div class="card bg-base-200 shadow-md hover:shadow-lg transition-shadow">
+                        <div class="card-body text-center">
+                            <div class="avatar mb-4">
+                                <div class="w-16 rounded-full bg-primary/20 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <h3 class="card-title text-xl mb-2">Fast & Reliable</h3>
+                            <p class="text-base-content/70">
+                                Built with Go for exceptional performance and reliability you can count on.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="card bg-base-200 shadow-md hover:shadow-lg transition-shadow">
+                        <div class="card-body text-center">
+                            <div class="avatar mb-4">
+                                <div class="w-16 rounded-full bg-secondary/20 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <h3 class="card-title text-xl mb-2">Beautiful Design</h3>
+                            <p class="text-base-content/70">
+                                Crafted with DaisyUI components for a modern and intuitive user interface.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="card bg-base-200 shadow-md hover:shadow-lg transition-shadow">
+                        <div class="card-body text-center">
+                            <div class="avatar mb-4">
+                                <div class="w-16 rounded-full bg-accent/20 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <h3 class="card-title text-xl mb-2">Secure & Robust</h3>
+                            <p class="text-base-content/70">
+                                Built with security best practices and robust architecture patterns.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="bg-primary/5 py-16">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-3xl font-bold text-base-content mb-4">Ready to Get Started?</h2>
+                <p class="text-base-content/70 mb-8 max-w-2xl mx-auto">
+                    Join thousands of developers who trust our platform for their projects
+                </p>
+                <div class="space-x-4">
+                    <button class="btn btn-primary btn-lg">Start Your Journey</button>
+                    <button class="btn btn-ghost btn-lg">View Documentation</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer footer-center p-10 bg-base-200 text-base-content">
+            <aside>
+                <svg class="w-12 h-12 text-primary mb-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <p class="font-bold text-lg">Bootstrap App</p>
+                <p class="text-base-content/70">Providing reliable tech solutions since 2025</p>
+            </aside>
+            <nav>
+                <div class="grid grid-flow-col gap-4">
+                    <a class="link link-hover">About us</a>
+                    <a class="link link-hover">Contact</a>
+                    <a class="link link-hover">Jobs</a>
+                    <a class="link link-hover">Press kit</a>
+                </div>
+            </nav>
+            <aside class="border-t border-base-300 pt-4 w-full">
+                {{include "layouts/footer"}}
+            </aside>
+        </footer>
+    </body>
+</html>

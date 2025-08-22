@@ -1,0 +1,51 @@
+package application
+
+import (
+	"{{.ProjectName}}/internal/user_context/domain"
+
+	"github.com/google/uuid"
+)
+
+type UserAPIService interface {
+	FindUserByID(id string) (*domain.User, error)
+	FindUserByEmail(email string) (*domain.User, error)
+	CreateUser(email string, password string) (*domain.User, error)
+}
+
+type userAPIServiceImpl struct {
+	userRepository domain.UserRepository
+}
+
+func NewUserAPIService(userRepository domain.UserRepository) UserAPIService {
+	return &userAPIServiceImpl{userRepository: userRepository}
+}
+
+func (s *userAPIServiceImpl) FindUserByID(id string) (*domain.User, error) {
+	return s.userRepository.FindByID(id)
+}
+
+func (s *userAPIServiceImpl) FindUserByEmail(email string) (*domain.User, error) {
+	return s.userRepository.FindByEmail(email)
+}
+
+func (s *userAPIServiceImpl) CreateUser(email string, password string) (*domain.User, error) {
+	existingUser, err := s.userRepository.FindByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	if existingUser != nil {
+		return nil, domain.ErrUserAlreadyExists
+	}
+	userID := uuid.New().String()
+	user, err := domain.NewUser(userID, email, password)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.userRepository.Save(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

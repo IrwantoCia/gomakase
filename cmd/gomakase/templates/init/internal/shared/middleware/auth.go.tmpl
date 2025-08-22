@@ -1,0 +1,53 @@
+package middleware
+
+import (
+	"net/http"
+	"strings"
+
+	authApp "{{.ProjectName}}/internal/auth_context/application"
+	userApp "{{.ProjectName}}/internal/user_context/application"
+
+	"github.com/gin-gonic/gin"
+)
+
+func AuthMiddleware(authService authApp.AuthService, userAPIService userApp.UserAPIService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var err error
+		token := c.GetHeader("Authorization")
+		if token == "" {
+			token, err = c.Cookie("token")
+			if err != nil {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+				c.Abort()
+				return
+			}
+		} else {
+			token = strings.Split(token, "Bearer ")[1]
+		}
+
+		if token == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
+		}
+
+		userID, err := authService.VerifyToken(token)
+		if err != nil {
+			c.SetCookie("token", "", -1, "/", "", false, true)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			c.Abort()
+			return
+		}
+
+		user, err := userAPIService.FindUserByID(userID)
+		if err != nil || user == nil || !user.IsActive {
+			c.SetCookie("token", "", -1, "/", "", false, true)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found or inactive"})
+			c.Abort()
+			return
+		}
+
+		c.Set("userID", user.UserID)
+		c.Next()
+	}
+}

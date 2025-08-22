@@ -1,0 +1,16 @@
+package infrastructure
+
+import (
+	"{{.ProjectName}}/internal/shared/logger"
+
+	"gorm.io/gorm"
+)
+
+type {{.ContextName}}RepositoryImpl struct {
+	db     *gorm.DB
+	logger logger.Logger
+}
+
+func New{{.ContextName}}RepositoryImpl(db *gorm.DB, logger logger.Logger) *{{.ContextName}}RepositoryImpl {
+	return &{{.ContextName}}RepositoryImpl{db: db, logger: logger}
+}

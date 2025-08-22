@@ -1,0 +1,12 @@
+package infrastructure
+
+import "time"
+
+type UserSchema struct {
+	UserID    string `gorm:"type:uuid;primaryKey"`
+	Email     string `gorm:"unique"`
+	Password  string
+	IsActive  bool `gorm:"default:true"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}

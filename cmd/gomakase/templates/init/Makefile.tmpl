@@ -1,0 +1,30 @@
+.PHONY: build run dev help clean
+
+all: help
+
+build:
+	@echo "Building the application..."
+	@npm run build:css
+	@go build -o ./bin/main ./cmd/server
+
+run:
+	@echo "Running the application..."
+	@./bin/main
+
+dev:
+	@echo "Starting development server..."
+	@air -c .air.toml
+
+clean:
+	@echo "Cleaning up..."
+	@rm -rf ./bin
+	@go clean
+
+help:
+	@echo "Usage: make <target>"
+	@echo "Targets:"
+	@echo "  build - Build the application"
+	@echo "  run - Run the application"
+	@echo "  dev - Start the development server"
+	@echo "  clean - Clean the application"
+	@echo "  help - Display this help message"

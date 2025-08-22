@@ -1,0 +1,117 @@
+package application
+
+import (
+	"{{.ProjectName}}/internal/payment_context/domain"
+	"{{.ProjectName}}/internal/shared/config"
+	"{{.ProjectName}}/internal/shared/logger"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type PaymentService interface {
+	CreatePayment() (string, *domain.Payment, error)
+	ProcessPaymentCallback(payload string) error
+}
+
+type paymentServiceImpl struct {
+	logger            logger.Logger
+	config            config.AppConfig
+	gateway           domain.PaymentGateway
+	paymentRepository domain.PaymentRepository
+}
+
+func NewPaymentService(
+	logger logger.Logger,
+	config config.AppConfig,
+	gateway domain.PaymentGateway,
+	paymentRepository domain.PaymentRepository,
+) PaymentService {
+	return &paymentServiceImpl{
+		logger:            logger,
+		config:            config,
+		gateway:           gateway,
+		paymentRepository: paymentRepository,
+	}
+}
+
+func (s *paymentServiceImpl) ProcessPaymentCallback(payload string) error {
+	paymentCallbackResponse, err := s.gateway.ProcessPaymentCallback(payload)
+	if err != nil {
+		s.logger.Error("failed to process payment callback", "error", err)
+		return err
+	}
+
+	// find the payment by invoice number
+	payment, err := s.paymentRepository.FindByInvoiceNumber(paymentCallbackResponse.InvoiceID)
+	if err != nil {
+		s.logger.Error("failed to find payment by invoice number", "error", err)
+		return err
+	}
+
+	payment.UpdateStatus(paymentCallbackResponse.Status)
+	payment.AddRawPaymentRecord(payment.PaymentID, paymentCallbackResponse.RawResponse)
+
+	// save the payment
+	err = s.paymentRepository.Save(payment)
+	if err != nil {
+		s.logger.Error("failed to save payment", "error", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *paymentServiceImpl) CreatePayment() (string, *domain.Payment, error) {
+	// detail about payment can be get from order service
+	orderID := "123"
+	paymentID := uuid.New().String()
+	invoiceNumber, err := domain.SetInvoiceNumber(orderID, paymentID)
+	if err != nil {
+		s.logger.Error("failed to set invoice number", "error", err)
+		return "", nil, err
+	}
+
+	paymentRequest := &domain.PaymentRequestDTO{
+		InvoiceID: invoiceNumber,
+		Amount:    20000,
+	}
+
+	paymentResponse, err := s.gateway.GeneratePaymentRequest(paymentRequest)
+	if err != nil {
+		s.logger.Error("failed to generate payment request", "error", err)
+		return "", nil, err
+	}
+
+	payment, err := domain.NewPayment(domain.CreatePaymentRequestDTO{
+		PaymentID:            paymentID,
+		OrderID:              orderID,
+		InvoiceNumber:        invoiceNumber,
+		Amount:               20000,
+		Currency:             "IDR",
+		GatewayTransactionID: paymentResponse.GatewayID,
+		PaymentMethod:        "doku",
+		Status:               domain.PaymentStatusPending,
+		RawPaymentRecords: []*domain.RawPaymentRecord{
+			{
+			RawPaymentRecordID: uuid.New().String(),
+			Content:            paymentResponse.RawResponse,
+			CreatedAt:          time.Now(),
+			},
+		},
+		CreatedAt: time.Now(),
+	})
+
+	if err != nil {
+		s.logger.Error("failed to create payment", "error", err)
+		return "", nil, err
+	}
+
+	err = s.paymentRepository.Save(payment)
+	if err != nil {
+		s.logger.Error("failed to save payment", "error", err)
+		return "", nil, err
+	}
+
+	return paymentResponse.URL, payment, nil
+}

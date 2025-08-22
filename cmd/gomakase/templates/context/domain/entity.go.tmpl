@@ -1,0 +1,21 @@
+package domain
+
+import (
+	"time"
+)
+
+type {{.ContextName}} struct {
+	{{.ContextName}}ID string
+	CreatedAt time.Time
+}
+
+func New{{.ContextName}}(ID string) (*{{.ContextName}}, error) {
+	if ID == "" {
+		return nil, Err{{.ContextName}}IDRequired
+	}
+
+	return &{{.ContextName}}{
+		{{.ContextName}}ID: ID,
+		CreatedAt: time.Now(),
+	}, nil
+}

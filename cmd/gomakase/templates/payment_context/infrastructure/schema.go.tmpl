@@ -1,0 +1,28 @@
+package infrastructure
+
+import "time"
+
+type PaymentSchema struct {
+	PaymentID            string `gorm:"type:uuid;primaryKey"`
+	OrderID              string `gorm:"type:uuid"`
+	InvoiceNumber        string `gorm:"type:varchar(255);unique"`
+	Status               string
+	Amount               float64
+	Currency             string
+	GatewayTransactionID string
+	PaymentMethod        string
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
+}
+
+type RawPaymentRecordSchema struct {
+	RawPaymentRecordID string `gorm:"type:uuid;primaryKey"`
+	Content            string
+	CreatedAt          time.Time
+}
+
+// mapping payment with payment record, using composite primary key
+type PaymentRecordSchema struct {
+	PaymentID          string `gorm:"type:uuid;primaryKey"`
+	RawPaymentRecordID string `gorm:"type:uuid;primaryKey"`
+}

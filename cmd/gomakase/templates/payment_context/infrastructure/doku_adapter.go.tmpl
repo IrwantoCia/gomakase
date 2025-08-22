@@ -1,0 +1,132 @@
+package infrastructure
+
+import (
+	"bytes"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"{{.ProjectName}}/internal/payment_context/domain"
+	"{{.ProjectName}}/internal/shared/config"
+	"{{.ProjectName}}/internal/shared/logger"
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type DokuAdapter struct {
+	logger logger.Logger
+	config config.AppConfig
+}
+
+func NewDokuAdapter(logger logger.Logger, config config.AppConfig) *DokuAdapter {
+	return &DokuAdapter{logger: logger, config: config}
+}
+
+func (d *DokuAdapter) GeneratePaymentRequest(paymentRequest *domain.PaymentRequestDTO) (*domain.PaymentGatewayResponse, error) {
+	payload := map[string]interface{}{
+		"order": map[string]interface{}{
+			"amount":         paymentRequest.Amount,
+			"invoice_number": paymentRequest.InvoiceID,
+		},
+		"payment": map[string]interface{}{
+			"payment_due_date": 60,
+		},
+	}
+	jsonPayload, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, d.config.Doku.URL, bytes.NewBuffer(jsonPayload))
+	if err != nil {
+		return nil, err
+	}
+
+	clientID := d.config.Doku.ClientID
+	requestID := uuid.New().String()
+	// Timestamp request on UTC time in ISO8601 UTC+0 format. It means to proceed transaction on UTC+7 (WIB),
+	// merchant need to subtract time with 7. Ex: to proceed transaction on September 22th 2020 at 08:51:00 WIB,
+	// the timestamp should be 2020-09-22T01:51:00Z
+	requestTimestamp := time.Now().Add(-7 * time.Hour).Format("2006-01-02T15:04:05Z")
+	requestTarget := "/checkout/v1/payment"
+
+	requestBody := string(jsonPayload)
+	signature, err := d.generateSignature(clientID, requestID, requestTimestamp, requestBody, requestTarget)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Client-Id", clientID)
+	req.Header.Set("Request-Id", requestID)
+	req.Header.Set("Request-Timestamp", requestTimestamp)
+	req.Header.Set("Signature", signature)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var dokuPaymentResponseDTO domain.DokuPaymentResponseDTO
+	err = json.Unmarshal(body, &dokuPaymentResponseDTO)
+	if err != nil {
+		d.logger.Error("failed to unmarshal doku payment response", "error", err)
+		return nil, err
+	}
+
+	return &domain.PaymentGatewayResponse{
+		URL:         dokuPaymentResponseDTO.Response.Payment.URL,
+		GatewayID:   dokuPaymentResponseDTO.Response.Payment.TokenID,
+		RawResponse: string(body),
+	}, nil
+
+}
+
+func (d *DokuAdapter) generateSignature(
+	clientID string,
+	requestID string,
+	requestTimestamp string,
+	requestBody string,
+	requestTarget string,
+) (string, error) {
+	// Calculate SHA256 base64 hash from the JSON Body
+	digest := sha256.New()
+	digest.Write([]byte(requestBody))
+	digestBase64 := base64.StdEncoding.EncodeToString(digest.Sum(nil))
+
+	// Calculate HMAC SHA256 base64 hash from the digest
+	signatureString := fmt.Sprintf("Client-Id:%s\nRequest-Id:%s\nRequest-Timestamp:%s\nRequest-Target:%s\nDigest:%s", clientID, requestID, requestTimestamp, requestTarget, digestBase64)
+
+	// Calculate HMAC SHA256 base64 hash from the signature string
+	signature := hmac.New(sha256.New, []byte(d.config.Doku.SecretKey))
+	signature.Write([]byte(signatureString))
+	signatureBase64 := "HMACSHA256=" + base64.StdEncoding.EncodeToString(signature.Sum(nil))
+
+	return signatureBase64, nil
+}
+
+func (d *DokuAdapter) ProcessPaymentCallback(payload string) (*domain.PaymentCallbackResponse, error) {
+	var dokuPaymentCallbackDTO domain.DokuPaymentCallbackDTO
+	err := json.Unmarshal([]byte(payload), &dokuPaymentCallbackDTO)
+	if err != nil {
+		d.logger.Error("failed to unmarshal doku payment callback", "error", err)
+		return nil, err
+	}
+
+	return &domain.PaymentCallbackResponse{
+		InvoiceID:   dokuPaymentCallbackDTO.Order.InvoiceNumber,
+		Status:      dokuPaymentCallbackDTO.Transaction.Status,
+		RawResponse: payload,
+	}, nil
+}

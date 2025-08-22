@@ -1,0 +1,22 @@
+{
+  "name": "{{.ProjectName}}",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev:css": "npx @tailwindcss/cli -i ./web/static/css/app.css -o ./web/static/css/output.css --watch",
+    "build:css": "npx @tailwindcss/cli -i ./web/static/css/app.css -o ./web/static/css/output.css",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "daisyui": "^5.0.50"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.12",
+    "tailwindcss": "^4.1.12"
+  }
+}

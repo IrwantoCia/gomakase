@@ -1,0 +1,20 @@
+package domain
+
+type PaymentGatewayResponse struct {
+	URL         string
+	GatewayID   string
+	RawResponse string
+}
+
+type PaymentCallbackResponse struct {
+	InvoiceID   string
+	Status      string
+	RawResponse string
+}
+
+type PaymentGateway interface {
+	GeneratePaymentRequest(
+		paymentRequest *PaymentRequestDTO,
+	) (*PaymentGatewayResponse, error)
+	ProcessPaymentCallback(payload string) (*PaymentCallbackResponse, error)
+}

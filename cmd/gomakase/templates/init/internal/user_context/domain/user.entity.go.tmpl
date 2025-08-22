@@ -1,0 +1,43 @@
+package domain
+
+import "time"
+
+type User struct {
+	UserID    string
+	Email     string
+	Password  string
+	IsActive  bool
+	CreatedAt time.Time
+}
+
+func NewUser(userID string, email string, password string) (*User, error) {
+	if userID == "" {
+		return nil, ErrUserInvalidUserID
+	}
+
+	if email == "" {
+		return nil, ErrUserInvalidEmail
+	}
+
+	if password == "" {
+		return nil, ErrUserInvalidPassword
+	}
+
+	return &User{
+		UserID:    userID,
+		Email:     email,
+		Password:  password,
+		IsActive:  true,
+		CreatedAt: time.Now(),
+	}, nil
+}
+
+func (u *User) ChangePassword(newPassword string) error {
+	if newPassword == "" {
+		return ErrUserInvalidPassword
+	}
+
+	u.Password = newPassword
+
+	return nil
+}

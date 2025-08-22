@@ -1,0 +1,90 @@
+package application
+
+import (
+	"os"
+	"{{.ProjectName}}/internal/payment_context/infrastructure"
+	"{{.ProjectName}}/internal/shared/config"
+	"{{.ProjectName}}/internal/shared/db"
+	"{{.ProjectName}}/internal/shared/logger"
+	"strconv"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+var (
+	cfg      *config.AppConfig
+	database *db.DB
+)
+
+func TestMain(m *testing.M) {
+	var err error
+	cfg, err = config.Load("../../../.env")
+	if err != nil {
+		logger.NewLogger("info").Fatal("Failed to load config: %v", err)
+	}
+
+	// always use sqlite for testing
+	cfg.Database.Driver = "sqlite"
+	cfg.Database.Name = "application.db"
+
+	// delete database file first if exists
+	if _, err := os.Stat(cfg.Database.Name); err == nil {
+		os.Remove(cfg.Database.Name)
+	}
+
+	database, err = db.ConnectToDatabase(cfg.Database, logger.NewLogger("info"))
+	if err != nil {
+		logger.NewLogger("info").Fatal("Failed to connect to the database: %v", err)
+	}
+	defer database.CloseDatabase()
+
+	database.AutoMigrateSchemas(
+		&infrastructure.PaymentSchema{},
+		&infrastructure.RawPaymentRecordSchema{},
+		&infrastructure.PaymentRecordSchema{},
+	)
+
+	exitCode := m.Run()
+
+	// delete folder logs
+	if _, err := os.Stat("logs"); err == nil {
+		os.RemoveAll("logs")
+	}
+
+	os.Exit(exitCode)
+}
+
+func TestCreatePayment(t *testing.T) {
+	log := logger.NewLogger("info")
+
+	dokuGateway := infrastructure.NewDokuAdapter(log, *cfg)
+	paymentRepository := infrastructure.NewPaymentRepositoryImpl(database.DB, log)
+	paymentService := NewPaymentService(log, *cfg, dokuGateway, paymentRepository)
+
+	paymentURL, payment, err := paymentService.CreatePayment()
+
+	assert.NoError(t, err)
+	assert.NotEmpty(t, paymentURL)
+	assert.NotEmpty(t, payment)
+}
+
+func TestProcessPaymentCallback(t *testing.T) {
+	log := logger.NewLogger("info")
+
+	dokuGateway := infrastructure.NewDokuAdapter(log, *cfg)
+	paymentRepository := infrastructure.NewPaymentRepositoryImpl(database.DB, log)
+	paymentService := NewPaymentService(log, *cfg, dokuGateway, paymentRepository)
+
+	paymentURL, payment, err := paymentService.CreatePayment()
+	assert.NoError(t, err)
+	assert.NotEmpty(t, paymentURL)
+	assert.NotEmpty(t, payment)
+
+	jsonString := strings.TrimSpace(`{"service":{"id":"VIRTUAL_ACCOUNT"},"acquirer":{"id":"BCA"},"channel":{"id":"VIRTUAL_ACCOUNT_BCA"},"order":{"invoice_number":"` + payment.InvoiceNumber + `","amount":` + strconv.FormatFloat(payment.Amount, 'f', -1, 64) + `},"virtual_account_info":{"virtual_account_number":"1900800000174837"},"transaction":{"status":"SUCCESS","date":"2025-08-18T09:51:35Z","original_request_id":"366452ff-834d-42a0-83b7-506c86deee13"}}`)
+
+	err = paymentService.ProcessPaymentCallback(jsonString)
+
+	assert.NoError(t, err)
+}
