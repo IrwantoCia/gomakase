@@ -1,0 +1,85 @@
+{{define "head"}}
+    <!-- Additional head content for dashboard page -->
+    <meta name="description" content="Dashboard">
+{{end}}
+
+{{define "content"}}
+<div class="container mx-auto px-4 py-8">
+    <!-- Dashboard Header -->
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-bold text-base-content">Welcome back, John Doe!</h1>
+        <button class="btn btn-primary">Create New Project</button>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats shadow stats-vertical lg:stats-horizontal w-full">
+        <!-- First Stat -->
+        <div class="stat">
+            <div class="stat-title">Projects</div>
+            <div class="stat-value">12</div>
+            <div class="stat-desc">2 new projects this month</div>
+        </div>
+        
+        <!-- Second Stat -->
+        <div class="stat">
+            <div class="stat-title">Active Tasks</div>
+            <div class="stat-value">31</div>
+            <div class="stat-desc">5 tasks overdue</div>
+        </div>
+        
+        <!-- Third Stat -->
+        <div class="stat">
+            <div class="stat-title">Notifications</div>
+            <div class="stat-value">3</div>
+            <div class="stat-desc">Unread messages</div>
+        </div>
+    </div>
+
+    <!-- Main Content Area (Recent Activity) -->
+    <div class="mt-12">
+        <h2 class="text-2xl font-bold text-base-content mb-6">Recent Activity</h2>
+        
+        <div class="card bg-base-200">
+            <div class="card-body">
+                <ul class="space-y-4">
+                    <li class="flex items-start space-x-3">
+                        <div class="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                        <div>
+                            <p class="text-base-content">You created a new project: <span class="font-semibold">'Mobile App Redesign'</span>.</p>
+                            <p class="text-sm text-base-content/70 mt-1">2 hours ago</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                        <div class="w-2 h-2 bg-success rounded-full mt-2 flex-shrink-0"></div>
+                        <div>
+                            <p class="text-base-content">You completed the task: <span class="font-semibold">'Draft initial wireframes'</span>.</p>
+                            <p class="text-sm text-base-content/70 mt-1">5 hours ago</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                        <div class="w-2 h-2 bg-info rounded-full mt-2 flex-shrink-0"></div>
+                        <div>
+                            <p class="text-base-content">A new team member was added to <span class="font-semibold">'Mobile App Redesign'</span>.</p>
+                            <p class="text-sm text-base-content/70 mt-1">1 day ago</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                        <div class="w-2 h-2 bg-warning rounded-full mt-2 flex-shrink-0"></div>
+                        <div>
+                            <p class="text-base-content">Deadline reminder: <span class="font-semibold">'User Research Analysis'</span> is due tomorrow.</p>
+                            <p class="text-sm text-base-content/70 mt-1">1 day ago</p>
+                        </div>
+                    </li>
+                    <li class="flex items-start space-x-3">
+                        <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+                        <div>
+                            <p class="text-base-content">You updated the project description for <span class="font-semibold">'E-commerce Platform'</span>.</p>
+                            <p class="text-sm text-base-content/70 mt-1">2 days ago</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

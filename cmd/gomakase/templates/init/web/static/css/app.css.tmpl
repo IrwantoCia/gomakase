@@ -1,2 +1,88 @@
 @import "tailwindcss";
 @plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "gomakase";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  /* Base colors - Cool-toned grays */
+  --color-base-100: hsl(220 14% 98%);
+  --color-base-200: hsl(220 14% 94%);
+  --color-base-300: hsl(220 14% 88%);
+  --color-base-content: hsl(220 13% 20%);
+
+  /* Primary - Strong, confident blue */
+  --color-primary: hsl(217 91% 60%);
+  --color-primary-content: hsl(0 0% 100%);
+
+  /* Secondary - Muted, complementary cool gray */
+  --color-secondary: hsl(220 13% 50%);
+  --color-secondary-content: hsl(0 0% 100%);
+
+  /* Accent - Vibrant green for highlights */
+  --color-accent: hsl(142 76% 36%);
+  --color-accent-content: hsl(0 0% 100%);
+
+  /* Neutral colors */
+  --color-neutral: hsl(220 13% 50%);
+  --color-neutral-content: hsl(0 0% 100%);
+
+  /* Semantic colors */
+  --color-info: hsl(217 91% 60%);
+  --color-info-content: hsl(0 0% 100%);
+  --color-success: hsl(142 76% 36%);
+  --color-success-content: hsl(0 0% 100%);
+  --color-warning: hsl(38 92% 50%);
+  --color-warning-content: hsl(0 0% 100%);
+  --color-error: hsl(0 84% 60%);
+  --color-error-content: hsl(0 0% 100%);
+
+  /* Border radius */
+  --radius-selector: 0.25rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+
+  /* Base sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  /* Border size */
+  --border: 1px;
+
+  /* Effects */
+  --depth: 1;
+  --noise: 0;
+}
+
+/* Custom Background Gradient */
+body {
+  background-image: radial-gradient(ellipse at top, hsl(259, 40%, 12%), hsl(220, 15%, 10%));
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+/* Custom DaisyUI v5 Theme - Playful & Techy */
+[data-theme="gomakase-theme"] {
+  /* Color Palette */
+  --p: 259 92% 66%;   /* Primary - A vibrant, techy purple */
+  --pc: 210 40% 98%;  /* Primary-content - A light, legible color for on top of primary */
+  --s: 181 92% 56%;   /* Secondary - A complementary bright teal */
+  --a: 332 94% 68%;   /* Accent - An energetic pink for highlights */
+  --n: 219 14% 28%;   /* Neutral - A cool dark color */
+
+  --b1: 0 0% 100%;    /* Base-100 - The main page background (white) */
+  --b2: 220 12% 95%;   /* Base-200 - Slightly darker for panels/cards */
+  --b3: 220 12% 90%;   /* Base-300 - Even darker for hover states, etc. */
+  --bc: 215 28% 17%;   /* Base-content - The default text color (a dark, cool gray) */
+
+  /* State Colors */
+  --su: 158 64% 52%;  /* Success */
+  --wa: 43 96% 56%;   /* Warning */
+  --er: 356 92% 62%;  /* Error */
+
+  /* Border Radius for a playful feel */
+  --rounded-box: 1rem; /* The default border radius for cards and other big elements */
+  --rounded-btn: 0.8rem; /* The border radius for buttons */
+  --rounded-badge: 1.9rem; /* The border radius for badges */
+}

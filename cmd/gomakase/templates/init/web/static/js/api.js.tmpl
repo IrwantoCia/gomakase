@@ -6,41 +6,94 @@ function login(email, password) {
         },
         body: JSON.stringify({ email, password }),
     })
-    .then(response => {
+    .then(async response => {
         if (!response.ok) {
-            console.error(response);
-            throw new Error('Login failed');
+            const error = await parseError(response);
+            console.error(error);
+            throw new Error(error);
+        } else {
+            return {
+                success: true,
+                data: await response.json(),
+            }
         }
-        return response.json();
-    })
-    .then(data => {
-        return data;
     })
     .catch(error => {
         console.error('Error:', error);
-        return error;
+        return {
+            success: false,
+            error: error,
+        };
     });
 }
 
-function register(fullName, username, email, password) {
+function register(email, password) {
     return fetch('/register', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-            fullName, 
-            username, 
             email, 
             password,
         }),
     })
-    .then(response => response.json())
-    .then(data => {
-        return data;
+    .then(async response => {
+        if (!response.ok) {
+            const error = await parseError(response);
+            console.error(error);
+            throw new Error(error);
+        } else {
+            return {
+                success: true,
+                data: await response.json(),
+            }
+        }
     })
     .catch(error => {
+        console.log(error?.error);
+        console.error('Error:', error);
+        return {
+            success: false,
+            error: error,
+        };
+    });
+}
+
+async function parseError(error) {
+    try {
+        const text = await error.text();
+        const json = JSON.parse(text);
+        return json.error;
+    } catch (error) {
         console.error('Error:', error);
         return error;
-    });
+    }
+}
+
+async function logout() {
+    try {
+        const response = await fetch('/logout', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        if (!response.ok) {
+            const error = await parseError(response);
+            console.error(error);
+            throw new Error(error);
+        } else {
+            return {
+                success: true,
+                data: await response.json(),
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        return {
+            success: false,
+            error: error,
+        };
+    }
 }
