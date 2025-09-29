@@ -2,6 +2,7 @@ package libs
 
 import (
 	"embed"
+	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -80,6 +81,12 @@ func (s *Service) GetContextTasks(contextName string) (TaskList, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		// add context name to filename
+		filename := filepath.Base(outpath)
+		filename = fmt.Sprintf("%s.%s", strings.ToLower(contextName), filename)
+		outpath = filepath.Join(filepath.Dir(outpath), filename)
+
 		outpath = filepath.Join(baseFolder, outpath)
 
 		outpathDir := filepath.Dir(outpath)

@@ -40,9 +40,15 @@
         <!-- Header (Navbar) -->
         <header class="navbar bg-base-100 shadow-sm">
             <div class="navbar-start">
+                {{if .user}}
+                <a href="/dashboard" class="btn btn-ghost text-xl text-primary">
+                    gomakase
+                </a>
                 <a href="/" class="btn btn-ghost text-xl text-primary">
                     gomakase
                 </a>
+                {{else}}
+                {{end}}
             </div>
             <div class="navbar-center">
                 <!-- Empty center section -->

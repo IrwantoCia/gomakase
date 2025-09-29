@@ -69,7 +69,7 @@ func main() {
 	userRepository := userInfra.NewUserRepositoryImpl(database.DB, appLogger)
 
 	userAPIService := userApp.NewUserAPIService(userRepository)
-	authService := authApp.NewAuthService(appLogger, authRepository, appConfig.JWT, userAPIService)
+	authService := authApp.NewAuthService(appLogger, authRepository, *appConfig, userAPIService)
 
 	authHandler := authDelivery.NewAuthHandler(appLogger, authService)
 

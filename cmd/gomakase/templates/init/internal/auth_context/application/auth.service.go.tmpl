@@ -22,14 +22,14 @@ type AuthService interface {
 type authServiceImpl struct {
 	logger          logger.Logger
 	authRepository  domain.AuthRepository
-	config          config.JWTConfig
+	config          config.AppConfig
 	userAPIService userApp.UserAPIService
 }
 
 func NewAuthService(
 	logger logger.Logger,
 	authRepository domain.AuthRepository,
-	config config.JWTConfig,
+	config config.AppConfig,
 	userAPIService userApp.UserAPIService,
 ) AuthService {
 	return &authServiceImpl{
@@ -51,12 +51,12 @@ func (s *authServiceImpl) Login(email string, password string) (string, error) {
 		return "", domain.ErrInvalidCredentials
 	}
 
-	expiresAt := time.Now().Add(s.config.AccessTokenExp)
+	expiresAt := time.Now().Add(s.config.JWT.AccessTokenExp)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.UserID,
 		"exp":     expiresAt.Unix(),
 	})
-	tokenString, err := token.SignedString([]byte(s.config.Secret))
+	tokenString, err := token.SignedString([]byte(s.config.JWT.Secret))
 	if err != nil {
 		s.logger.Error("Login", "error", err)
 		return "", err
@@ -78,7 +78,7 @@ func (s *authServiceImpl) Login(email string, password string) (string, error) {
 		}
 	} else {
 		authID := uuid.New().String()
-		auth, err := domain.NewAuth(authID, user.UserID, tokenString, expiresAt)
+		auth, err := domain.NewAuth(authID, user.UserID, tokenString, domain.ProviderWeb, expiresAt)
 		if err != nil {
 			s.logger.Error("Login", "error", err)
 			return "", err
@@ -106,19 +106,19 @@ func (s *authServiceImpl) Register(email string, password string) (string, error
 		return "", err
 	}
 
-	expiresAt := time.Now().Add(s.config.AccessTokenExp)
+	expiresAt := time.Now().Add(s.config.JWT.AccessTokenExp)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.UserID,
 		"exp":     expiresAt.Unix(),
 	})
-	tokenString, err := token.SignedString([]byte(s.config.Secret))
+	tokenString, err := token.SignedString([]byte(s.config.JWT.Secret))
 	if err != nil {
 		s.logger.Error("Register", "error", err)
 		return "", err
 	}
 
 	authID := uuid.New().String()
-	auth, err := domain.NewAuth(authID, user.UserID, tokenString, expiresAt)
+	auth, err := domain.NewAuth(authID, user.UserID, tokenString, domain.ProviderWeb, expiresAt)
 	if err != nil {
 		s.logger.Error("Register", "error", err)
 		return "", err
@@ -144,7 +144,7 @@ func (s *authServiceImpl) Logout(userID string) error {
 
 func (s *authServiceImpl) VerifyToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(s.config.Secret), nil
+		return []byte(s.config.JWT.Secret), nil
 	})
 	if err != nil {
 		s.logger.Error("VerifyToken", "error", err)

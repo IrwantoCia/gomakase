@@ -5,19 +5,19 @@ import (
 	"{{.ProjectName}}/internal/shared/logger"
 )
 
-type {{.ContextName}}Service interface {
+type {{.ContextName}}ServiceAPI interface {
 }
 
-type {{.ContextNameCamel}}ServiceImpl struct {
+type {{.ContextNameCamel}}ServiceAPIImpl struct {
 	logger          logger.Logger
 	config          config.AppConfig
 }
 
-func New{{.ContextName}}Service(
+func New{{.ContextName}}ServiceAPI(
 	logger logger.Logger,
 	config config.AppConfig,
-) {{.ContextName}}Service {
-	return &{{.ContextNameCamel}}ServiceImpl{
+) {{.ContextName}}ServiceAPI {
+	return &{{.ContextNameCamel}}ServiceAPIImpl{
 		logger:          logger,
 		config:          config,
 	}

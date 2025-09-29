@@ -29,6 +29,7 @@ func (r *AuthRepositoryImpl) Save(auth *domain.Auth) error {
 		AuthID:    auth.AuthID,
 		UserID:    auth.UserID,
 		Token:     auth.Token,
+		Provider:  string(auth.Provider),
 		ExpiresAt: auth.ExpiresAt,
 		CreatedAt: auth.CreatedAt,
 	}
@@ -49,6 +50,7 @@ func (r *AuthRepositoryImpl) FindByID(id string) (*domain.Auth, error) {
 		AuthID:    auth.AuthID,
 		UserID:    auth.UserID,
 		Token:     auth.Token,
+		Provider:  domain.Provider(auth.Provider),
 		ExpiresAt: auth.ExpiresAt,
 		CreatedAt: auth.CreatedAt,
 	}, nil
@@ -66,6 +68,7 @@ func (r *AuthRepositoryImpl) FindByUserID(userID string) (*domain.Auth, error) {
 		AuthID:    auth.AuthID,
 		UserID:    auth.UserID,
 		Token:     auth.Token,
+		Provider:  domain.Provider(auth.Provider),
 		ExpiresAt: auth.ExpiresAt,
 		CreatedAt: auth.CreatedAt,
 	}, nil
