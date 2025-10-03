@@ -4,18 +4,24 @@
 
 {{`{{define "content"}}`}}
 <main class="min-h-screen flex items-center justify-center bg-base-100">
-    <div class="card w-full max-w-sm bg-base-200 shadow-xl">
+    <div class="card w-full max-w-sm bg-base-200 shadow-xl" x-data="register" x-init="init()">
         <div class="card-body">
             <h2 class="card-title justify-center mb-6">Create an Account</h2>
 
-            <form>
+            <form @submit.prevent="submitRegister()">
                 <div class="flex flex-col gap-4">
                     <!-- Email Field -->
                     <div class="form-control">
                         <label class="label">
                             <span class="label-text">Email</span>
                         </label>
-                        <input type="email" placeholder="Enter your email" class="input input-bordered w-full" required />
+                        <input
+                            type="email"
+                            placeholder="Enter your email"
+                            class="input input-bordered w-full"
+                            x-model="form.email"
+                            required
+                        />
                     </div>
 
                     <!-- Password Field -->
@@ -23,7 +29,13 @@
                         <label class="label">
                             <span class="label-text">Password</span>
                         </label>
-                        <input type="password" placeholder="Enter your password" class="input input-bordered w-full" required />
+                        <input
+                            type="password"
+                            placeholder="Enter your password"
+                            class="input input-bordered w-full"
+                            x-model="form.password"
+                            required
+                        />
                     </div>
 
                     <!-- Confirm Password Field -->
@@ -31,11 +43,24 @@
                         <label class="label">
                             <span class="label-text">Confirm Password</span>
                         </label>
-                        <input type="password" placeholder="Confirm your password" class="input input-bordered w-full" required />
+                        <input
+                            type="password"
+                            placeholder="Confirm your password"
+                            class="input input-bordered w-full"
+                            x-model="form.confirmPassword"
+                            required
+                        />
                     </div>
 
                     <!-- Register Button -->
-                    <button type="submit" class="btn btn-primary w-full">Create Account</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-full"
+                        :disabled="isLoading"
+                    >
+                        <span x-show="!isLoading">Create Account</span>
+                        <span x-show="isLoading" class="loading loading-spinner loading-sm"></span>
+                    </button>
                 </div>
             </form>
 

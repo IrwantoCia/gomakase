@@ -4,18 +4,24 @@
 
 {{`{{define "content"}}`}}
 <main class="min-h-screen flex items-center justify-center bg-base-100">
-    <div class="card w-full max-w-sm bg-base-200 shadow-xl">
+    <div class="card w-full max-w-sm bg-base-200 shadow-xl" x-data="login" x-init="init()">
         <div class="card-body">
             <h2 class="card-title justify-center mb-6">Sign In</h2>
 
-            <form>
+            <form @submit.prevent="submitLogin()">
                 <div class="flex flex-col gap-4">
                     <!-- Email Field -->
                     <div class="form-control">
                         <label class="label">
                             <span class="label-text">Email</span>
                         </label>
-                        <input type="email" placeholder="Enter your email" class="input input-bordered w-full" required />
+                        <input
+                            type="email"
+                            placeholder="Enter your email"
+                            class="input input-bordered w-full"
+                            x-model="form.email"
+                            required
+                        />
                     </div>
 
                     <!-- Password Field -->
@@ -23,11 +29,24 @@
                         <label class="label">
                             <span class="label-text">Password</span>
                         </label>
-                        <input type="password" placeholder="Enter your password" class="input input-bordered w-full" required />
+                        <input
+                            type="password"
+                            placeholder="Enter your password"
+                            class="input input-bordered w-full"
+                            x-model="form.password"
+                            required
+                        />
                     </div>
 
                     <!-- Login Button -->
-                    <button type="submit" class="btn btn-primary w-full">Sign In</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-full"
+                        :disabled="isLoading"
+                    >
+                        <span x-show="!isLoading">Sign In</span>
+                        <span x-show="isLoading" class="loading loading-spinner loading-sm"></span>
+                    </button>
                 </div>
             </form>
 

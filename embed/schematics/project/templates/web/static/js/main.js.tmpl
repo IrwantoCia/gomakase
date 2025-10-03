@@ -1,0 +1,34 @@
+// main.js
+import Alpine from 'alpinejs';
+import components from './component.js';
+
+document.addEventListener('alpine:init', () => {
+    // Global store for notifications
+    Alpine.store('notifications', {
+        message: '',
+        type: 'success', // 'success' or 'error'
+        visible: false,
+        timer: null,
+
+        show(message, type = 'success') {
+            clearTimeout(this.timer);
+            this.message = message;
+            this.type = type;
+            this.visible = true;
+            // Hide after 5 seconds
+            this.timer = setTimeout(() => { this.hide() }, 5000);
+        },
+
+        hide() {
+            this.visible = false;
+        }
+    });
+
+    Object.entries(components).forEach(([key, component]) => {
+        Alpine.data(key, component);
+    });
+
+});
+
+window.Alpine = Alpine;
+Alpine.start();

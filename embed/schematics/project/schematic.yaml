@@ -49,6 +49,18 @@ actions:
   - type: create_file
     template: web/views/index.html.tmpl
     output: "{{ .Module }}/web/views/index.html"
+  - type: create_file
+    template: web/static/js/alpine-mixins.js.tmpl
+    output: "{{ .Module }}/web/static/js/src/alpine-mixins.js"
+  - type: create_file
+    template: web/static/js/main.js.tmpl
+    output: "{{ .Module }}/web/static/js/src/main.js"
+  - type: create_file
+    template: web/static/js/api.js.tmpl
+    output: "{{ .Module }}/web/static/js/src/api.js"
+  - type: create_file
+    template: web/static/js/component.js.tmpl
+    output: "{{ .Module }}/web/static/js/src/component.js"
   # shared
   - type: create_file
     template: internal/shared/config/config.go.tmpl

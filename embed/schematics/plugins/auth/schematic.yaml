@@ -30,6 +30,15 @@ actions:
   - type: create_file
     template: register.html.tmpl
     output: "web/views/register.html"
+  - type: create_file
+    template: register.js.tmpl
+    output: "web/static/js/src/components/register.js"
+  - type: create_file
+    template: login.js.tmpl
+    output: "web/static/js/src/components/login.js"
+  - type: create_file
+    template: component.js.tmpl
+    output: "web/static/js/src/component.js"
 
   - type: add_import
     output: "cmd/server/router.go"

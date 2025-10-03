@@ -93,7 +93,10 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalf("Error running go fmt: %v", err)
 		}
-
+		err = command.NPMInstall()
+		if err != nil {
+			log.Fatalf("Error running npm install: %v", err)
+		}
 	},
 }
 
