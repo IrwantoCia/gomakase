@@ -31,18 +31,36 @@ func TestFile_ParseTemplate(t *testing.T) {
 }
 
 func TestFile_ParseFilePath(t *testing.T) {
-	input := "{{ .Module }}/go.mod"
-	expected := "test/go.mod"
-
-	file := NewFile()
-	filePath, err := file.ParseFilePath(input, map[string]string{
-		"Module": "test",
-	})
-	if err != nil {
-		t.Fatalf("Error parsing file path: %v", err)
+	tests := []struct {
+		input    string
+		data     map[string]string
+		expected string
+	}{
+		{
+			input:    "{{ .Module }}/go.mod",
+			data:     map[string]string{"Module": "test"},
+			expected: "test/go.mod",
+		},
+		{
+			input:    "internal/{{ .ContextName | lower }}/domain/{{ .ContextName | lower }}.entity.go",
+			data:     map[string]string{"ContextName": "myapp"},
+			expected: "internal/myapp/domain/myapp.entity.go",
+		},
+		{
+			input:    "internal/{{ .ContextName | title }}/delivery/{{ .ContextName | title }}.handler.go",
+			data:     map[string]string{"ContextName": "myapp"},
+			expected: "internal/Myapp/delivery/Myapp.handler.go",
+		},
 	}
 
-	assert.Equal(t, filePath, expected)
+	file := NewFile()
+	for _, tt := range tests {
+		filePath, err := file.ParseFilePath(tt.input, tt.data)
+		if err != nil {
+			t.Fatalf("Error parsing file path: %v", err)
+		}
+		assert.Equal(t, filePath, tt.expected)
+	}
 }
 
 func TestFile_IsPathExists(t *testing.T) {

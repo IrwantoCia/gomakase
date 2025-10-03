@@ -1,0 +1,25 @@
+package domain
+
+import (
+	"errors"
+	"time"
+)
+
+type {{ .ContextName | title }} struct {
+	{{ .ContextName | title }}ID      string
+	CreatedAt time.Time
+}
+
+func NewAi(
+	{{ .ContextName | lower }}ID string,
+	createdAt time.Time,
+) (*{{ .ContextName | title }}, error) {
+	if {{ .ContextName | lower }}ID == "" {
+		return nil, errors.New("{{ .ContextName | lower }}ID is required")
+	}
+
+	return &{{ .ContextName | title }}{
+		{{ .ContextName | title }}ID: {{ .ContextName | lower }}ID,
+		CreatedAt: createdAt,
+	}, nil
+}

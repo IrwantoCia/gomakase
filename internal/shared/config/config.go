@@ -23,6 +23,17 @@ type ProjectSchematic struct {
 	Actions     []ProjectAction `yaml:"actions"`
 }
 
+type ContextAction struct {
+	Type     string `yaml:"type"`
+	Template string `yaml:"template"`
+	Output   string `yaml:"output"`
+}
+type ContextSchematic struct {
+	Description string          `yaml:"description"`
+	Variables   []Variable      `yaml:"variables"`
+	Actions     []ContextAction `yaml:"actions"`
+}
+
 type PluginAction struct {
 	Type       string `yaml:"type"`
 	Template   string `yaml:"template"`

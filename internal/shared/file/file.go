@@ -4,7 +4,11 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/template"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type File interface {
@@ -35,7 +39,10 @@ func (f *file) IsPathExists(path string) bool {
 }
 
 func (f *file) ParseFilePath(path string, data map[string]string) (string, error) {
-	tmpl, err := template.New("output").Parse(path)
+	tmpl, err := template.New("output").Funcs(template.FuncMap{
+		"lower": strings.ToLower,
+		"title": cases.Title(language.English).String,
+	}).Parse(path)
 	if err != nil {
 		return path, err
 	}
@@ -47,7 +54,10 @@ func (f *file) ParseFilePath(path string, data map[string]string) (string, error
 }
 
 func (f *file) ParseTemplate(content []byte, data map[string]string) ([]byte, error) {
-	tmpl, err := template.New("template").Parse(string(content))
+	tmpl, err := template.New("template").Funcs(template.FuncMap{
+		"lower": strings.ToLower,
+		"title": cases.Title(language.English).String,
+	}).Parse(string(content))
 	if err != nil {
 		return []byte{}, err
 	}

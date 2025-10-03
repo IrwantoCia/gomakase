@@ -1,0 +1,29 @@
+package application
+
+import (
+	"{{ .Module }}/internal/shared/config"
+	"{{ .Module }}/internal/shared/logger"
+
+	"{{ .Module }}/internal/{{ .ContextName | lower }}/domain"
+)
+
+type {{ .ContextName | title }}Service interface {
+}
+
+type {{ .ContextName | lower }}Service struct {
+	logger logger.Logger
+	config *config.AppConfig
+	{{ .ContextName | lower }}Repository domain.{{ .ContextName | title }}Repository
+}
+
+func New{{ .ContextName | title }}Service(
+	{{ .ContextName | lower }}Repository domain.{{ .ContextName | title }}Repository,
+	logger logger.Logger,
+	config *config.AppConfig,
+) {{ .ContextName | title }}Service {
+	return &{{ .ContextName | lower }}Service{
+		{{ .ContextName | lower }}Repository: {{ .ContextName | lower }}Repository,
+		logger:               logger,
+		config:               config,
+	}
+}
