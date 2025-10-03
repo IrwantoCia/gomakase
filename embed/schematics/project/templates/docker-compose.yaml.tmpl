@@ -1,0 +1,21 @@
+services:
+  {{ .Module }}:
+    container_name: {{ .Module }}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - 8080:8080      
+    env_file:
+      - .env
+    networks:
+      - archnet
+
+networks:
+  archnet:
+    external: true

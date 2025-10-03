@@ -1,0 +1,59 @@
+package main
+
+import (
+	"{{.Module}}/internal/shared/config"
+    "{{.Module}}/internal/shared/db"
+	"{{.Module}}/internal/shared/logger"
+	"{{.Module}}/internal/shared/middleware"
+	"html/template"
+	"log"
+
+	"github.com/foolin/goview"
+	"github.com/foolin/goview/supports/ginview"
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	// Load config
+	err := config.Load("")
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+	appLogger := logger.NewLogger(config.Config.LogLevel)
+	defer appLogger.Sync()
+
+	if config.Config.LogLevel != "debug" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	database := db.NewDatabase(appLogger)
+	err = database.Connect(config.Config.Database)
+	if err != nil {
+		appLogger.Fatal("Failed to connect to the database: %v", err)
+	}
+	defer database.CloseDatabase()
+
+	router := gin.New()
+
+	// Middleware Setup
+	router.HTMLRender = ginview.New(goview.Config{
+		Root:         "web/views",
+		Extension:    ".html",
+		Master:       "layouts/master",
+		Partials:     []string{},
+		Funcs:        template.FuncMap{},
+		DisableCache: true,
+	})
+
+	router.Use(middleware.Logger(appLogger))
+	router.Use(gin.Recovery())
+
+	router.Static("/static", "web/static")
+
+	// Routes Setup
+	Routes(router, database, appLogger)
+
+	// Server Setup
+	app := NewApp(appLogger, config.Config, router)
+	app.Run()
+}

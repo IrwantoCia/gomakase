@@ -1,0 +1,71 @@
+description: "Adds authentication functionality to the project." 
+variables:
+  - name: Module
+    description: "The Go module path for the new project (e.g., github.com/user/my-app or my-app)"
+actions:
+  - type: create_file
+    template: auth.service.go.tmpl
+    output: "internal/auth/application/auth.service.go"
+  - type: create_file
+    template: auth.handler.go.tmpl
+    output: "internal/auth/delivery/auth.handler.go"
+  - type: create_file
+    template: auth.entity.go.tmpl
+    output: "internal/auth/domain/auth.entity.go"
+  - type: create_file
+    template: auth.repository.go.tmpl
+    output: "internal/auth/domain/auth.repository.go"
+  - type: create_file
+    template: auth.repository_impl.go.tmpl
+    output: "internal/auth/infrastructure/auth.repository_impl.go"
+  - type: create_file
+    template: auth.schema.go.tmpl
+    output: "internal/auth/infrastructure/auth.schema.go"
+  - type: create_file
+    template: auth.middleware.go.tmpl
+    output: "internal/shared/middleware/auth.go"
+  - type: create_file
+    template: login.html.tmpl
+    output: "web/views/login.html"
+  - type: create_file
+    template: register.html.tmpl
+    output: "web/views/register.html"
+
+  - type: add_import
+    output: "cmd/server/router.go"
+    import: "{{ .Module }}/internal/shared/config"
+  - type: add_import
+    output: "cmd/server/router.go"
+    import: "{{ .Module }}/internal/auth/application"
+    alias: "authApp"
+  - type: add_import
+    output: "cmd/server/router.go"
+    import: "{{ .Module }}/internal/auth/delivery"
+    alias: "authDelivery"
+  - type: add_import
+    output: "cmd/server/router.go"
+    import: "{{ .Module }}/internal/auth/infrastructure"
+    alias: "authInfra"
+
+  - type: add_dependency
+    output: "cmd/server/router.go"
+    dependency: "authRepository := authInfra.NewAuthRepositoryImpl( database.GetInstance(), logger)"
+  - type: add_dependency
+    output: "cmd/server/router.go"
+    dependency: "authService := authApp.NewAuthService(authRepository, config.Config, logger)"
+  - type: add_dependency
+    output: "cmd/server/router.go"
+    dependency: "authHandler := authDelivery.NewAuthHandler(logger, authService)"
+
+  - type: add_route
+    output: "cmd/server/router.go"
+    route: "router.GET(\"/register\", authHandler.RegisterPage)"
+  - type: add_route
+    output: "cmd/server/router.go"
+    route: "router.POST(\"/register\", authHandler.Register)"
+  - type: add_route
+    output: "cmd/server/router.go"
+    route: "router.GET(\"/login\", authHandler.LoginPage)"
+  - type: add_route
+    output: "cmd/server/router.go"
+    route: "router.POST(\"/login\", authHandler.Login)"

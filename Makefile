@@ -12,11 +12,12 @@ test:
 
 build:
 	@echo "Building the project..."
-	@go build -o gomakase cmd/gomakase/main.go
+	@go build -o gomakase main.go
 
 install:
 	@echo "Installing the project..."
-	@go install ./cmd/gomakase
+	@go build -o gomakase main.go
+	@go install .
 
 help:
 	@echo "Usage: make <target>"

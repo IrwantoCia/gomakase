@@ -1,0 +1,176 @@
+package infrastructure
+
+import (
+	"{{.Module}}/internal/auth/domain"
+	"{{.Module}}/internal/shared/logger"
+
+	"errors"
+
+	"gorm.io/gorm"
+)
+
+type authRepositoryImpl struct {
+	db     *gorm.DB
+	logger logger.Logger
+}
+
+func NewAuthRepositoryImpl(db *gorm.DB, logger logger.Logger) domain.AuthRepository {
+	return &authRepositoryImpl{db: db, logger: logger}
+}
+
+func (r *authRepositoryImpl) Save(user *domain.User) error {
+	userSchema := &UserSchema{
+		UserID:    user.UserID,
+		Email:     user.Email,
+		Password:  user.Password,
+		IsActive:  user.IsActive,
+		CreatedAt: user.CreatedAt,
+	}
+	authSchema := &AuthSchema{
+		AuthID:    user.Auth.AuthID,
+		UserID:    user.Auth.UserID,
+		Token:     user.Auth.Token,
+		Provider:  string(user.Auth.Provider),
+		ExpiresAt: user.Auth.ExpiresAt,
+		CreatedAt: user.Auth.CreatedAt,
+	}
+	if err := r.db.Save(userSchema).Error; err != nil {
+		return err
+	}
+	if err := r.db.Save(authSchema).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *authRepositoryImpl) FindByAuthID(id string) (*domain.User, error) {
+	var authSchema AuthSchema
+	if err := r.db.Where("auth_id = ?", id).First(&authSchema).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var userSchema UserSchema
+	if err := r.db.Where("user_id = ?", authSchema.UserID).First(&userSchema).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	authDomain, err := domain.NewAuth(
+		authSchema.AuthID,
+		authSchema.UserID,
+		authSchema.Token,
+		domain.Provider(authSchema.Provider),
+		authSchema.ExpiresAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	userDomain, err := domain.NewUser(
+		userSchema.UserID,
+		userSchema.Email,
+		userSchema.Password,
+		authDomain,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return userDomain, nil
+}
+
+func (r *authRepositoryImpl) FindByUserID(userID string) (*domain.User, error) {
+	var authSchema AuthSchema
+	if err := r.db.Where("user_id = ?", userID).First(&authSchema).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	authDomain, err := domain.NewAuth(
+		authSchema.AuthID,
+		authSchema.UserID,
+		authSchema.Token,
+		domain.Provider(authSchema.Provider),
+		authSchema.ExpiresAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var userSchema UserSchema
+	if err := r.db.Where("user_id = ?", userID).First(&userSchema).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	userDomain, err := domain.NewUser(
+		userSchema.UserID,
+		userSchema.Email,
+		userSchema.Password,
+		authDomain,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return userDomain, nil
+
+}
+
+func (r *authRepositoryImpl) RemoveAuth(auth *domain.Auth) error {
+	return r.db.Delete(&AuthSchema{
+		AuthID: auth.AuthID,
+	}).Error
+}
+
+func (r *authRepositoryImpl) FindByUserEmail(email string) (*domain.User, error) {
+	var userSchema UserSchema
+	if err := r.db.Where("email = ?", email).First(&userSchema).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	userDomain, err := domain.NewUser(
+		userSchema.UserID,
+		userSchema.Email,
+		userSchema.Password,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var authSchema AuthSchema
+	if err := r.db.Where("user_id = ?", userSchema.UserID).First(&authSchema).Error; err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+	}
+	var authDomain *domain.Auth
+	if authSchema.AuthID != "" {
+		authDomain, err = domain.NewAuth(
+			authSchema.AuthID,
+			authSchema.UserID,
+			authSchema.Token,
+			domain.Provider(authSchema.Provider),
+			authSchema.ExpiresAt,
+		)
+		if err != nil {
+			userDomain.Auth = nil
+		} else {
+			userDomain.Auth = authDomain
+		}
+	}
+
+	return userDomain, nil
+}

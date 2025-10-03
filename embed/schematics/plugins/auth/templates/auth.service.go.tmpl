@@ -1,0 +1,169 @@
+package application
+
+import (
+	"fmt"
+	"{{.Module}}/internal/auth/domain"
+	"{{.Module}}/internal/shared/config"
+	"{{.Module}}/internal/shared/logger"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+)
+
+type AuthService interface {
+	Register(email string, password string) (*domain.User, error)
+	Login(email string, password string) (*domain.User, error)
+	Logout(userID string) error
+	VerifyToken(tokenString string) (string, error)
+	FindByUserID(userID string) (*domain.User, error)
+}
+
+type authService struct {
+	authRepository domain.AuthRepository
+	config         *config.AppConfig
+	logger         logger.Logger
+}
+
+func NewAuthService(
+	authRepository domain.AuthRepository,
+	config *config.AppConfig,
+	logger logger.Logger,
+) AuthService {
+	return &authService{
+		authRepository: authRepository,
+		config:         config,
+		logger:         logger,
+	}
+}
+
+func (s *authService) Login(email string, password string) (*domain.User, error) {
+	user, err := s.authRepository.FindByUserEmail(email)
+	if err != nil || user == nil {
+		s.logger.Error("Login", "email", email, "error", err)
+		return nil, err
+	}
+
+	if !s.isPasswordValid(user.Password, password) {
+		return nil, fmt.Errorf("invalid credentials")
+	}
+
+	expiresAt := time.Now().Add(s.config.JWT.AccessTokenExp)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.UserID,
+		"exp":     expiresAt.Unix(),
+	})
+	tokenString, err := token.SignedString([]byte(s.config.JWT.Secret))
+	if err != nil {
+		s.logger.Error("Login", "error", err)
+		return nil, err
+	}
+
+	if user.Auth != nil {
+		user.Auth.Token = tokenString
+		user.Auth.ExpiresAt = expiresAt
+		err = s.authRepository.Save(user)
+		if err != nil {
+			s.logger.Error("Login", "error", err)
+			return nil, err
+		}
+	} else {
+		authID := uuid.New().String()
+		user.Auth, err = domain.NewAuth(
+			authID,
+			user.UserID,
+			tokenString,
+			domain.ProviderWeb,
+			expiresAt,
+		)
+		if err != nil {
+			s.logger.Error("Login", "error", err)
+			return nil, err
+		}
+		err = s.authRepository.Save(user)
+		if err != nil {
+			s.logger.Error("Login", "error", err)
+			return nil, err
+		}
+	}
+
+	return user, nil
+}
+
+func (s *authService) Register(email string, password string) (*domain.User, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		s.logger.Error("Register", "email", email, "error", err)
+		return nil, err
+	}
+
+	user, err := domain.NewUser(uuid.New().String(), email, string(hashedPassword), nil)
+	if err != nil {
+		s.logger.Error("Register", "error", err)
+		return nil, err
+	}
+
+	expiresAt := time.Now().Add(s.config.JWT.AccessTokenExp)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": user.UserID,
+		"exp":     expiresAt.Unix(),
+	})
+	tokenString, err := token.SignedString([]byte(s.config.JWT.Secret))
+	if err != nil {
+		s.logger.Error("Register", "error", err)
+		return nil, err
+	}
+
+	authID := uuid.New().String()
+	auth, err := domain.NewAuth(
+		authID,
+		user.UserID,
+		tokenString,
+		domain.ProviderWeb,
+		expiresAt,
+	)
+	if err != nil {
+		s.logger.Error("Register", "error", err)
+		return nil, err
+	}
+
+	user.Auth = auth
+
+	err = s.authRepository.Save(user)
+	if err != nil {
+		s.logger.Error("Register", "error", err)
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *authService) Logout(userID string) error {
+	user, err := s.authRepository.FindByUserID(userID)
+	if err != nil {
+		return err
+	}
+
+	return s.authRepository.RemoveAuth(user.Auth)
+}
+
+func (s *authService) VerifyToken(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(s.config.JWT.Secret), nil
+	})
+	if err != nil {
+		s.logger.Error("VerifyToken", "error", err)
+		return "", err
+	}
+
+	return token.Claims.(jwt.MapClaims)["user_id"].(string), nil
+}
+
+func (s *authService) isPasswordValid(hashedPassword string, password string) bool {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password)) == nil
+}
+
+func (s *authService) FindByUserID(userID string) (*domain.User, error) {
+	return s.authRepository.FindByUserID(userID)
+}

@@ -1,0 +1,21 @@
+package main
+
+import (
+	"net/http"
+
+	"{{.Module}}/internal/shared/db"
+	"{{.Module}}/internal/shared/logger"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Routes(router *gin.Engine, database db.Database, logger logger.Logger) {
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index", gin.H{"title": "Home"})
+	})
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "UP",
+		})
+	})
+}
