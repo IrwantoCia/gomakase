@@ -1,0 +1,88 @@
+package logger
+
+import (
+	"os"
+
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
+
+type Logger interface {
+	Debug(msg string, fields ...any)
+	Info(msg string, fields ...any)
+	Warn(msg string, fields ...any)
+	Error(msg string, fields ...any)
+	Fatal(msg string, fields ...any)
+	With(fields ...any) Logger
+	Sync() error
+}
+
+type zapLogger struct {
+	logger *zap.SugaredLogger
+}
+
+func NewLogger(level string) Logger {
+	var logLevel zapcore.Level
+	switch level {
+	case "debug":
+		logLevel = zapcore.DebugLevel
+	case "info":
+		logLevel = zapcore.InfoLevel
+	case "warn":
+		logLevel = zapcore.WarnLevel
+	case "error":
+		logLevel = zapcore.ErrorLevel
+	default:
+		logLevel = zapcore.InfoLevel
+	}
+
+	// log file folder will be in the root of the project, despite of the current working directory
+	logFileFolder := "logs"
+	os.MkdirAll(logFileFolder, os.ModePerm)
+	config := zap.Config{
+		Level:            zap.NewAtomicLevelAt(logLevel),
+		Development:      false,
+		Encoding:         "json",
+		EncoderConfig:    zap.NewProductionEncoderConfig(),
+		OutputPaths:      []string{"stdout", logFileFolder + "/app.log"},
+		ErrorOutputPaths: []string{"stderr"},
+	}
+
+	logger, err := config.Build()
+	if err != nil {
+		panic(err)
+	}
+	return &zapLogger{
+		logger: logger.Sugar(),
+	}
+}
+
+func (l *zapLogger) Debug(msg string, fields ...any) {
+	l.logger.Debugw(msg, fields...)
+}
+
+func (l *zapLogger) Info(msg string, fields ...any) {
+	l.logger.Infow(msg, fields...)
+}
+
+func (l *zapLogger) Warn(msg string, fields ...any) {
+	l.logger.Warnw(msg, fields...)
+}
+
+func (l *zapLogger) Error(msg string, fields ...any) {
+	l.logger.Errorw(msg, fields...)
+}
+
+func (l *zapLogger) Fatal(msg string, fields ...any) {
+	l.logger.Fatalw(msg, fields...)
+}
+
+func (l *zapLogger) With(fields ...any) Logger {
+	return &zapLogger{
+		logger: l.logger.With(fields...),
+	}
+}
+
+func (l *zapLogger) Sync() error {
+	return l.logger.Sync()
+}

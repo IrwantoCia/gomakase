@@ -1,0 +1,42 @@
+// static/js/src/components/login.js
+
+import { withApi } from '../alpine-mixins.js';
+import { apiFetch } from '../api.js';
+
+// This is our component definition. It's just a function.
+export const login = () => ({
+    // Use the spread operator to include our reusable logic
+    ...withApi(),
+
+    // Component-specific data
+    form: {
+        email: '',
+        password: ''
+    },
+
+    // Handle form submission
+    async submitLogin() {
+        await this.handleApiCall(async () => {
+            const result = await apiFetch('/login', {
+                method: 'POST',
+                body: {
+                    email: this.form.email,
+                    password: this.form.password
+                }
+            });
+
+            // Show success message and redirect on successful login
+            Alpine.store('notifications').show('Login successful!', 'success');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 1000);
+
+            return result;
+        });
+    },
+
+    // Initialize component
+    init() {
+        // Component is ready
+    }
+});

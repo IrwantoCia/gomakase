@@ -1,0 +1,99 @@
+package domain
+
+import (
+	"fmt"
+	"time"
+)
+
+type Provider string
+
+const (
+	ProviderTelegram Provider = "telegram"
+	ProviderWeb      Provider = "web"
+)
+
+type User struct {
+	UserID    string
+	Email     string
+	Password  string
+	Auth      *Auth
+	IsActive  bool
+	CreatedAt time.Time
+}
+
+func NewUser(userID string, email string, password string, auth *Auth) (*User, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("userID is required")
+	}
+
+	if email == "" {
+		return nil, fmt.Errorf("email is required")
+	}
+
+	if password == "" {
+		return nil, fmt.Errorf("password is required")
+	}
+
+	return &User{
+		UserID:    userID,
+		Email:     email,
+		Password:  password,
+		IsActive:  true,
+		Auth:      auth,
+		CreatedAt: time.Now(),
+	}, nil
+}
+
+func (u *User) ChangePassword(newPassword string) error {
+	if newPassword == "" {
+		return fmt.Errorf("new password is required")
+	}
+
+	u.Password = newPassword
+
+	return nil
+}
+
+type Auth struct {
+	AuthID    string
+	UserID    string
+	Provider  string
+	Token     string
+	ExpiresAt time.Time
+	CreatedAt time.Time
+}
+
+func NewAuth(
+	authID string,
+	userID string,
+	token string,
+	provider Provider,
+	expiresAt time.Time,
+) (*Auth, error) {
+	if authID == "" {
+		return nil, fmt.Errorf("authID is required")
+	}
+
+	if userID == "" {
+		return nil, fmt.Errorf("userID is required")
+	}
+
+	if token == "" {
+		return nil, fmt.Errorf("token is required")
+	}
+
+	if expiresAt.IsZero() {
+		return nil, fmt.Errorf("expiresAt is required")
+	}
+
+	user := &Auth{
+		AuthID:    authID,
+		UserID:    userID,
+		Token:     token,
+		Provider:  string(provider),
+		ExpiresAt: expiresAt,
+		CreatedAt: time.Now(),
+	}
+
+	return user, nil
+}

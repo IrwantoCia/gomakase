@@ -1,0 +1,62 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"{{.Module}}/internal/shared/config"
+	"{{.Module}}/internal/shared/logger"
+
+	"github.com/gin-gonic/gin"
+)
+
+type App interface {
+	Run()
+}
+
+type app struct {
+	Logger logger.Logger
+	Config *config.AppConfig
+	Router *gin.Engine
+}
+
+func NewApp(logger logger.Logger, config *config.AppConfig, router *gin.Engine) App {
+	return &app{
+		Logger: logger,
+		Config: config,
+		Router: router,
+	}
+}
+
+func (a *app) Run() {
+	a.Logger.Info("Starting server on port: ", "port", a.Config.Server.Port)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", a.Config.Server.Port),
+		Handler: a.Router,
+	}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			a.Logger.Fatal("listen: %s\n", err)
+		}
+	}()
+
+	// Graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	a.Logger.Info("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		a.Logger.Fatal("Server forced to shutdown:", err)
+	}
+	<-ctx.Done()
+	a.Logger.Info("Server exiting")
+}

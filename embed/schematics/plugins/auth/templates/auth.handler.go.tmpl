@@ -1,0 +1,94 @@
+package delivery
+
+import (
+	"net/http"
+
+	"{{.Module}}/internal/auth/application"
+	"{{.Module}}/internal/shared/logger"
+
+	"github.com/gin-gonic/gin"
+)
+
+type AuthHandler struct {
+	logger      logger.Logger
+	authService application.AuthService
+}
+
+func NewAuthHandler(
+	logger logger.Logger,
+	authService application.AuthService,
+) *AuthHandler {
+	return &AuthHandler{logger: logger, authService: authService}
+}
+
+func (h *AuthHandler) RegisterPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "register", gin.H{
+		"title": "Register",
+	})
+}
+
+func (h *AuthHandler) Register(c *gin.Context) {
+	var registerRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := c.ShouldBindJSON(&registerRequest); err != nil {
+		h.logger.Error("Failed to bind JSON", "error", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	email := registerRequest.Email
+	password := registerRequest.Password
+
+	user, err := h.authService.Register(email, password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.SetCookie("token", user.Auth.Token, 3600*24*30*12, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "Register successful"})
+}
+
+func (h *AuthHandler) LoginPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "login", gin.H{
+		"title": "Login",
+	})
+}
+
+func (h *AuthHandler) Login(c *gin.Context) {
+	var loginRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		h.logger.Error("Failed to bind JSON", "error", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	email := loginRequest.Email
+	password := loginRequest.Password
+
+	user, err := h.authService.Login(email, password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.SetCookie("token", user.Auth.Token, 3600*24*30*12, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+}
+
+func (h *AuthHandler) Logout(c *gin.Context) {
+	userID := c.GetString("userID")
+
+	err := h.authService.Logout(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.SetCookie("token", "", -1, "/", "", false, true)
+	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
+}

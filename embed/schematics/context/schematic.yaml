@@ -1,0 +1,25 @@
+description: "Generates the initial context structure."
+variables:
+  - name: Module
+    description: "The Go module path for the new context"
+  - name: ContextName
+    description: "The name of the context"
+actions:
+  - type: create_file
+    template: entity.go.tmpl
+    output: "internal/{{ .ContextName | lower }}/domain/{{ .ContextName | lower }}.entity.go"
+  - type: create_file
+    template: handler.go.tmpl
+    output: "internal/{{ .ContextName | lower }}/delivery/{{ .ContextName | lower }}.handler.go"
+  - type: create_file
+    template: repository_impl.go.tmpl
+    output: "internal/{{ .ContextName | lower }}/infrastructure/{{ .ContextName | lower }}.repository.go"
+  - type: create_file
+    template: repository.go.tmpl
+    output: "internal/{{ .ContextName | lower }}/domain/{{ .ContextName | lower }}.repository.go"
+  - type: create_file
+    template: schema.go.tmpl
+    output: "internal/{{ .ContextName | lower }}/infrastructure/{{ .ContextName | lower }}.schema.go"
+  - type: create_file
+    template: service.go.tmpl
+    output: "internal/{{ .ContextName | lower }}/application/{{ .ContextName | lower }}.service.go"

@@ -1,0 +1,21 @@
+package delivery
+
+import (
+	"{{ .Module }}/internal/{{ .ContextName | lower }}/application"
+	"{{ .Module }}/internal/shared/logger"
+)
+
+type {{ .ContextName | title }}Handler struct {
+	logger                logger.Logger
+	{{ .ContextName | lower }}Service             application.{{ .ContextName | title }}Service
+}
+
+func New{{ .ContextName | title }}Handler(
+    logger logger.Logger,
+    {{ .ContextName | lower }}Service application.{{ .ContextName | title }}Service,
+) *{{ .ContextName | title }}Handler {
+	return &{{ .ContextName | title }}Handler{
+		logger:                logger,
+		{{ .ContextName | lower }}Service:             {{ .ContextName | lower }}Service,
+	}
+}

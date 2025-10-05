@@ -1,0 +1,83 @@
+package db
+
+import (
+	"fmt"
+
+	"{{.Module}}/internal/shared/logger"
+
+	"{{.Module}}/internal/shared/config"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+)
+
+const sqliteFile = "application.db"
+
+type Database interface {
+	Connect(dbConfig config.DatabaseConfig) error
+	AutoMigrateSchemas(schemas ...interface{})
+	CloseDatabase()
+	GetInstance() *gorm.DB
+}
+
+type database struct {
+	Instance *gorm.DB
+	Logger   logger.Logger
+}
+
+func NewDatabase(logger logger.Logger) Database {
+	return &database{
+		Instance: nil,
+		Logger:   logger,
+	}
+}
+
+func (d *database) Connect(dbConfig config.DatabaseConfig) error {
+	var db *gorm.DB
+	var err error
+
+	switch dbConfig.Driver {
+	case "postgres":
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s",
+			dbConfig.Host, dbConfig.User, dbConfig.Password, dbConfig.Name, dbConfig.Port, dbConfig.SSLMode)
+		d.Logger.Info("Connected to the database using PostgreSQL", "dsn", dsn)
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	case "sqlite":
+		d.Logger.Info("Connected to the database using SQLite", "file", sqliteFile)
+		db, err = gorm.Open(sqlite.Open(sqliteFile), &gorm.Config{})
+	default:
+		return fmt.Errorf("invalid database driver: %s", dbConfig.Driver)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to connect to the database: %w", err)
+	}
+
+	d.Instance = db
+	d.AutoMigrateSchemas()
+
+	return nil
+}
+
+func (d *database) AutoMigrateSchemas(schemas ...interface{}) {
+	d.Logger.Info("Starting database auto-migration...")
+	if err := d.Instance.AutoMigrate(schemas...); err != nil {
+		d.Logger.Fatal("Database auto-migration failed: %v", err)
+	}
+	d.Logger.Info("Database auto-migration completed successfully.")
+}
+
+func (d *database) CloseDatabase() {
+	sqlDB, err := d.Instance.DB()
+	if err != nil {
+		d.Logger.Error("Error getting underlying SQL DB: %v", err)
+		return
+	}
+	sqlDB.Close()
+	d.Logger.Info("Database connection closed.")
+}
+
+func (d *database) GetInstance() *gorm.DB {
+	return d.Instance
+}

@@ -1,0 +1,122 @@
+<!doctype html>
+<html data-theme="{{ .Module }}" lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/css/output.css">
+        <script defer src="/static/js/dist/app.js"></script>
+        <title>{{ .Module }}</title>
+        {{`{{template "head" .}}`}}
+    </head>
+
+    <body class="min-h-screen flex flex-col">
+        <!-- Alpine.js Notification System -->
+        <div x-data="{ notifications: $store.notifications }" class="toast toast-top toast-end">
+            <!-- Success Notification -->
+            <div
+                x-show="notifications.visible && notifications.type === 'success'"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-x-full"
+                x-transition:enter-end="opacity-100 transform translate-x-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 transform translate-x-0"
+                x-transition:leave-end="opacity-0 transform translate-x-full"
+                class="alert alert-success cursor-pointer"
+                @click="notifications.hide()"
+            >
+                <svg class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span x-text="notifications.message"></span>
+            </div>
+
+            <!-- Error Notification -->
+            <div
+                x-show="notifications.visible && notifications.type === 'error'"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-x-full"
+                x-transition:enter-end="opacity-100 transform translate-x-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 transform translate-x-0"
+                x-transition:leave-end="opacity-0 transform translate-x-full"
+                class="alert alert-error cursor-pointer"
+                @click="notifications.hide()"
+            >
+                <svg class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span x-text="notifications.message"></span>
+            </div>
+        </div>
+
+        <!-- Header (Navbar) -->
+        <header class="navbar bg-base-100 shadow-sm border-b border-base-content/10">
+            <!-- Branding -->
+            <div class="navbar-start">
+                <a href="/" class="btn btn-ghost text-xl">{{ .Module }}</a>
+            </div>
+
+            {{`{{if .UserID}}`}}
+                <!-- Logged-in state -->
+                <div class="navbar-center">
+                    <ul class="menu menu-horizontal px-1">
+                    </ul>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="dropdown dropdown-end">
+                        <div tabindex="0" role="button" class="btn btn-ghost">
+                            {{ .User.Email }}
+                        </div>
+                        <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow border border-base-content/10">
+                            <li><a href="/profile">Profile</a></li>
+                            <li x-data="withApi()">
+                                <a
+                                    href="#"
+                                    id="logout"
+                                    @click="handleApiCall(async () => {
+                                        const data = await logout();
+                                        if (data.success) {
+                                            Alpine.store('notifications').show('Logged out successfully', 'success');
+                                            setTimeout(() => {
+                                                window.location.href = '/login';
+                                            }, 1500);
+                                        }
+                                        return data;
+                                    })"
+                                    :disabled="isLoading"
+                                    class="btn btn-ghost"
+                                >
+                                    <span x-show="!isLoading">Logout</span>
+                                    <span x-show="isLoading" class="loading loading-spinner loading-sm"></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            {{`{{else}}`}}
+                <!-- Logged-out state -->
+                <div class="navbar-center">
+                    <!-- Empty center section -->
+                </div>
+
+                <div class="navbar-end">
+                    <a href="/login" class="btn btn-ghost">Login</a>
+                    <a href="/register" class="btn btn-primary">Register</a>
+                </div>
+            {{`{{end}}`}}
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1">
+            {{`{{template "content" .}}`}}
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer footer-center p-10 bg-base-200 text-base-content">
+            <div>
+                <p>© 2025 {{ .Module }} - All rights reserved</p>
+            </div>
+        </footer>
+    </body>
+</html>

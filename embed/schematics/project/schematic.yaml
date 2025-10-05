@@ -1,0 +1,76 @@
+description: "Generates the initial project structure." 
+variables:
+  - name: Module
+    description: "The Go module path for the new project (e.g., github.com/user/my-app or my-app)"
+actions:
+  - type: create_file
+    template: go.mod.tmpl
+    output: "{{ .Module }}/go.mod"
+  - type: create_file
+    template: gen.yaml.tmpl
+    output: "{{ .Module }}/gen.yaml"
+  - type: create_file
+    template: .env.example.tmpl
+    output: "{{ .Module }}/.env.example"
+  - type: create_file
+    template: Makefile.tmpl
+    output: "{{ .Module }}/Makefile"
+  - type: create_file
+    template: Dockerfile.tmpl
+    output: "{{ .Module }}/Dockerfile"
+  - type: create_file
+    template: docker-compose.yaml.tmpl
+    output: "{{ .Module }}/docker-compose.yaml"
+  - type: create_file
+    template: .gitignore.tmpl
+    output: "{{ .Module }}/.gitignore"
+  - type: create_file
+    template: .air.toml.tmpl
+    output: "{{ .Module }}/.air.toml"
+  - type: create_file
+    template: package.json.tmpl
+    output: "{{ .Module }}/package.json"
+  - type: create_file
+    template: cmd/server/main.go.tmpl
+    output: "{{ .Module }}/cmd/server/main.go"
+  - type: create_file
+    template: cmd/server/app.go.tmpl
+    output: "{{ .Module }}/cmd/server/app.go"
+  - type: create_file
+    template: cmd/server/router.go.tmpl
+    output: "{{ .Module }}/cmd/server/router.go"
+  # web
+  - type: create_file
+    template: web/static/css/app.css.tmpl
+    output: "{{ .Module }}/web/static/css/app.css"
+  - type: create_file
+    template: web/views/layouts/master.html.tmpl
+    output: "{{ .Module }}/web/views/layouts/master.html"
+  - type: create_file
+    template: web/views/index.html.tmpl
+    output: "{{ .Module }}/web/views/index.html"
+  - type: create_file
+    template: web/static/js/alpine-mixins.js.tmpl
+    output: "{{ .Module }}/web/static/js/src/alpine-mixins.js"
+  - type: create_file
+    template: web/static/js/main.js.tmpl
+    output: "{{ .Module }}/web/static/js/src/main.js"
+  - type: create_file
+    template: web/static/js/api.js.tmpl
+    output: "{{ .Module }}/web/static/js/src/api.js"
+  - type: create_file
+    template: web/static/js/component.js.tmpl
+    output: "{{ .Module }}/web/static/js/src/component.js"
+  # shared
+  - type: create_file
+    template: internal/shared/config/config.go.tmpl
+    output: "{{ .Module }}/internal/shared/config/config.go"
+  - type: create_file
+    template: internal/shared/db/db.go.tmpl
+    output: "{{ .Module }}/internal/shared/db/db.go"
+  - type: create_file
+    template: internal/shared/logger/logger.go.tmpl
+    output: "{{ .Module }}/internal/shared/logger/logger.go"
+  - type: create_file
+    template: internal/shared/middleware/logger.go.tmpl
+    output: "{{ .Module }}/internal/shared/middleware/logger.go"

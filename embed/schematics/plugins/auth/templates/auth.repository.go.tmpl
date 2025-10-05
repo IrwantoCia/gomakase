@@ -1,0 +1,9 @@
+package domain
+
+type AuthRepository interface {
+	Save(user *User) error
+	FindByAuthID(id string) (*User, error)
+	FindByUserID(userID string) (*User, error)
+	FindByUserEmail(email string) (*User, error)
+	RemoveAuth(auth *Auth) error
+}

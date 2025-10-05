@@ -1,0 +1,52 @@
+/**
+ * Makes an API request with proper error handling and JSON parsing
+ * @param {string} url - The URL to make the request to
+ * @param {Object} options - Fetch options object
+ * @param {string} options.method - HTTP method (defaults to 'GET')
+ * @param {Object} options.headers - Additional headers to include
+ * @param {Object} options.body - Request body (will be stringified if object)
+ * @param {Object} options.credentials - Credentials policy (include, same-origin, omit)
+ * @returns {Promise<any>} - Parsed JSON response data
+ * @throws {Error} - Throws error for network or HTTP errors
+ *
+ * @example
+ * // GET request
+ * const data = await apiFetch('/api/users');
+ *
+ * // POST request
+ * const newUser = await apiFetch('/api/users', {
+ *   method: 'POST',
+ *   body: { name: 'John', email: 'john@example.com' }
+ * });
+ *
+ * // PUT request with custom headers
+ * const updatedUser = await apiFetch('/api/users/1', {
+ *   method: 'PUT',
+ *   headers: { 'Authorization': 'Bearer token123' },
+ *   body: { name: 'John Doe' }
+ * });
+ */
+export async function apiFetch(url, options = {}) {
+    try {
+        const response = await fetch(url, {
+            method: options.method || 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+            body: options.body && typeof options.body === 'object'
+                ? JSON.stringify(options.body)
+                : options.body,
+            ...options,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('API fetch error:', error);
+        throw error;
+    }
+}
