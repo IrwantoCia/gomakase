@@ -10,7 +10,7 @@ type {{ .ContextName | title }} struct {
 	CreatedAt time.Time
 }
 
-func NewAi(
+func New{{ .ContextName | title }}(
 	{{ .ContextName | lower }}ID string,
 	createdAt time.Time,
 ) (*{{ .ContextName | title }}, error) {
