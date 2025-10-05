@@ -37,7 +37,6 @@ export async function apiFetch(url, options = {}) {
             body: options.body && typeof options.body === 'object'
                 ? JSON.stringify(options.body)
                 : options.body,
-            ...options,
         });
 
         if (!response.ok) {
