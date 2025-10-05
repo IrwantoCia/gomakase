@@ -11,7 +11,7 @@
 
     <body class="min-h-screen flex flex-col">
         <!-- Alpine.js Notification System -->
-        <div x-data="{ notifications: $store.notifications }" class="toast toast-top toast-end">
+        <div x-data="{ notifications: $store.notifications }" class="toast toast-top toast-end z-50">
             <!-- Success Notification -->
             <div
                 x-show="notifications.visible && notifications.type === 'success'"

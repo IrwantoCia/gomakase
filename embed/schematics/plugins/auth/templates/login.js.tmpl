@@ -17,19 +17,25 @@ export const login = () => ({
     // Handle form submission
     async submitLogin() {
         await this.handleApiCall(async () => {
-            const result = await apiFetch('/login', {
-                method: 'POST',
-                body: {
-                    email: this.form.email,
-                    password: this.form.password
-                }
-            });
+            let result;
+            try {
+              result = await apiFetch('/login', {
+                  method: 'POST',
+                  body: {
+                      email: this.form.email,
+                      password: this.form.password
+                  }
+              });
 
-            // Show success message and redirect on successful login
-            Alpine.store('notifications').show('Login successful!', 'success');
-            setTimeout(() => {
-                window.location.href = '/dashboard';
-            }, 1000);
+              // Show success message and redirect on successful login
+              Alpine.store('notifications').show('Login successful!', 'success');
+              setTimeout(() => {
+                  window.location.href = '/dashboard';
+              }, 1000);
+            } catch (error) {
+              // Show error message
+              Alpine.store('notifications').show(error, 'error');
+            }
 
             return result;
         });

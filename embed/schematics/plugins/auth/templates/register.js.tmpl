@@ -18,20 +18,26 @@ export const register = () => ({
     // Handle form submission
     async submitRegister() {
         await this.handleApiCall(async () => {
-            const result = await apiFetch('/register', {
-                method: 'POST',
-                body: {
-                    email: this.form.email,
-                    password: this.form.password,
-                    confirmPassword: this.form.confirmPassword
-                }
-            });
+            let result;
+            try {
+              result = await apiFetch('/register', {
+                  method: 'POST',
+                  body: {
+                      email: this.form.email,
+                      password: this.form.password,
+                      confirmPassword: this.form.confirmPassword
+                  }
+              });
 
-            // Show success message and redirect on successful login
-            Alpine.store('notifications').show('Register successful!', 'success');
-            setTimeout(() => {
-                window.location.href = '/login';
-            }, 1000);
+              // Show success message and redirect on successful login
+              Alpine.store('notifications').show('Register successful!', 'success');
+              setTimeout(() => {
+                  window.location.href = '/login';
+              }, 1000);
+            } catch (error) {
+              // Show error message
+              Alpine.store('notifications').show(error, 'error');
+            }
 
             return result;
         });

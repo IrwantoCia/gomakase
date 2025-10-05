@@ -92,6 +92,11 @@ func (s *authService) Login(email string, password string) (*domain.User, error)
 }
 
 func (s *authService) Register(email string, password string) (*domain.User, error) {
+  existingUser := s.authRepository.FindByUserEmail(email)
+  if existingUser != nil {
+    return nil, fmt.Errorf("user already exists")
+  }
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		s.logger.Error("Register", "email", email, "error", err)
