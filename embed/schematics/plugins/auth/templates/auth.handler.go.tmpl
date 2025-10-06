@@ -17,8 +17,8 @@ type AuthHandler struct {
 func NewAuthHandler(
 	logger logger.Logger,
 	authService application.AuthService,
-) *AuthHandler {
-	return &AuthHandler{logger: logger, authService: authService}
+) AuthHandler {
+	return AuthHandler{logger: logger, authService: authService}
 }
 
 func (h *AuthHandler) RegisterPage(c *gin.Context) {

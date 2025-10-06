@@ -9,16 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type authRepositoryImpl struct {
+type authRepository struct {
 	db     *gorm.DB
 	logger logger.Logger
 }
 
-func NewAuthRepositoryImpl(db *gorm.DB, logger logger.Logger) domain.AuthRepository {
-	return &authRepositoryImpl{db: db, logger: logger}
+func NewAuthRepository(db *gorm.DB, logger logger.Logger) authRepository {
+	return authRepository{db: db, logger: logger}
 }
 
-func (r *authRepositoryImpl) Save(user *domain.User) error {
+func (r *authRepository) Save(user *domain.User) error {
 	userSchema := &UserSchema{
 		UserID:    user.UserID,
 		Email:     user.Email,
@@ -44,7 +44,7 @@ func (r *authRepositoryImpl) Save(user *domain.User) error {
 	return nil
 }
 
-func (r *authRepositoryImpl) FindByAuthID(id string) (*domain.User, error) {
+func (r *authRepository) FindByAuthID(id string) (*domain.User, error) {
 	var authSchema AuthSchema
 	if err := r.db.Where("auth_id = ?", id).First(&authSchema).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -85,7 +85,7 @@ func (r *authRepositoryImpl) FindByAuthID(id string) (*domain.User, error) {
 	return userDomain, nil
 }
 
-func (r *authRepositoryImpl) FindByUserID(userID string) (*domain.User, error) {
+func (r *authRepository) FindByUserID(userID string) (*domain.User, error) {
 	var authSchema AuthSchema
 	if err := r.db.Where("user_id = ?", userID).First(&authSchema).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -125,13 +125,13 @@ func (r *authRepositoryImpl) FindByUserID(userID string) (*domain.User, error) {
 
 }
 
-func (r *authRepositoryImpl) RemoveAuth(auth *domain.Auth) error {
+func (r *authRepository) RemoveAuth(auth *domain.Auth) error {
 	return r.db.Delete(&AuthSchema{
 		AuthID: auth.AuthID,
 	}).Error
 }
 
-func (r *authRepositoryImpl) FindByUserEmail(email string) (*domain.User, error) {
+func (r *authRepository) FindByUserEmail(email string) (*domain.User, error) {
 	var userSchema UserSchema
 	if err := r.db.Where("email = ?", email).First(&userSchema).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -58,13 +58,13 @@ actions:
 
   - type: add_dependency
     output: "cmd/server/router.go"
-    dependency: "authRepository := authInfra.NewAuthRepositoryImpl( database.GetInstance(), logger)"
+    dependency: "authRepository := authInfra.NewAuthRepository( database.GetInstance(), logger)"
   - type: add_dependency
     output: "cmd/server/router.go"
-    dependency: "authService := authApp.NewAuthService(authRepository, config.Config, logger)"
+    dependency: "authService := authApp.NewAuthService(&authRepository, config.Config, logger)"
   - type: add_dependency
     output: "cmd/server/router.go"
-    dependency: "authHandler := authDelivery.NewAuthHandler(logger, authService)"
+    dependency: "authHandler := authDelivery.NewAuthHandler(logger, &authService)"
 
   - type: add_route
     output: "cmd/server/router.go"

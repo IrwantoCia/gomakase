@@ -30,8 +30,8 @@ func NewAuthService(
 	authRepository domain.AuthRepository,
 	config *config.AppConfig,
 	logger logger.Logger,
-) AuthService {
-	return &authService{
+) authService {
+	return authService{
 		authRepository: authRepository,
 		config:         config,
 		logger:         logger,
@@ -92,7 +92,7 @@ func (s *authService) Login(email string, password string) (*domain.User, error)
 }
 
 func (s *authService) Register(email string, password string) (*domain.User, error) {
-  existingUser := s.authRepository.FindByUserEmail(email)
+  existingUser, _ := s.authRepository.FindByUserEmail(email)
   if existingUser != nil {
     return nil, fmt.Errorf("user already exists")
   }

@@ -1,7 +1,6 @@
 package infrastructure
 
 import (
-	"{{ .Module }}/internal/{{ .ContextName | lower }}/domain"
 	"{{ .Module }}/internal/shared/logger"
 
 	"gorm.io/gorm"
@@ -12,6 +11,6 @@ type {{ .ContextName | lower }}Repository struct {
 	logger logger.Logger
 }
 
-func New{{ .ContextName | title }}Repository(db *gorm.DB, logger logger.Logger) domain.{{ .ContextName | title }}Repository {
+func New{{ .ContextName | title }}Repository(db *gorm.DB, logger logger.Logger) {{ .ContextName | lower }}Repository {
 	return &{{ .ContextName | lower }}Repository{db: db, logger: logger}
 }

@@ -20,8 +20,8 @@ func New{{ .ContextName | title }}Service(
 	{{ .ContextName | lower }}Repository domain.{{ .ContextName | title }}Repository,
 	logger logger.Logger,
 	config *config.AppConfig,
-) {{ .ContextName | title }}Service {
-	return &{{ .ContextName | lower }}Service{
+) {{ .ContextName | lower }}Service {
+	return {{ .ContextName | lower }}Service{
 		{{ .ContextName | lower }}Repository: {{ .ContextName | lower }}Repository,
 		logger:               logger,
 		config:               config,
