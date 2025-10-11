@@ -25,6 +25,9 @@ actions:
     template: .gitignore.tmpl
     output: "{{ .Module }}/.gitignore"
   - type: create_file
+    template: .dockerignore.tmpl
+    output: "{{ .Module }}/.dockerignore"
+  - type: create_file
     template: .air.toml.tmpl
     output: "{{ .Module }}/.air.toml"
   - type: create_file
