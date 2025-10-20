@@ -13,9 +13,11 @@ export const login = () => ({
         email: '',
         password: ''
     },
+    isLoading: false,
 
     // Handle form submission
     async submitLogin() {
+        this.isLoading = true;
         await this.handleApiCall(async () => {
             let result;
             try {
@@ -35,6 +37,8 @@ export const login = () => ({
             } catch (error) {
               // Show error message
               Alpine.store('notifications').show(error, 'error');
+            } finally {
+              this.isLoading = false;
             }
 
             return result;

@@ -1,3 +1,4 @@
+// Package main
 package main
 
 import (
@@ -18,4 +19,7 @@ func Routes(router *gin.Engine, database db.Database, logger logger.Logger) {
 			"status": "UP",
 		})
 	})
+  router.NoRoute(func(c *gin.Context) {
+    c.HTML(http.StatusNotFound, "404", gin.H{})
+  })
 }

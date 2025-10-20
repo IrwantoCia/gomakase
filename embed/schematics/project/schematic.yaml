@@ -50,6 +50,9 @@ actions:
     template: web/views/layouts/master.html.tmpl
     output: "{{ .Module }}/web/views/layouts/master.html"
   - type: create_file
+    template: web/views/layouts/404.html.tmpl
+    output: "{{ .Module }}/web/views/404.html"
+  - type: create_file
     template: web/views/index.html.tmpl
     output: "{{ .Module }}/web/views/index.html"
   - type: create_file

@@ -14,9 +14,11 @@ export const register = () => ({
         password: '',
         confirmPassword: ''
     },
+    isLoading: false,
 
     // Handle form submission
     async submitRegister() {
+        this.isLoading = true;
         await this.handleApiCall(async () => {
             let result;
             try {
@@ -37,6 +39,8 @@ export const register = () => ({
             } catch (error) {
               // Show error message
               Alpine.store('notifications').show(error, 'error');
+            } finally {
+              this.isLoading = false;
             }
 
             return result;

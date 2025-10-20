@@ -1,3 +1,4 @@
+// Package application
 package application
 
 import (
@@ -149,6 +150,10 @@ func (s *authService) Logout(userID string) error {
 	if err != nil {
 		return err
 	}
+
+  if user == nil {
+    return nil
+  }
 
 	return s.authRepository.RemoveAuth(user.Auth)
 }

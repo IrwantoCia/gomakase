@@ -4,17 +4,12 @@ import { apiFetch } from './api.js';
 // A reusable "mixin" that provides loading state and a smart fetch method
 export function withApi() {
     return {
-        isLoading: false,
-
         /**
          * A wrapper method to perform an API call.
          * It automatically handles loading states and shows notifications.
          * @param {Function} apiCall - An async function that performs the apiFetch.
          */
         async handleApiCall(apiCall) {
-            if (this.isLoading) return; // Prevent concurrent requests
-
-            this.isLoading = true;
             // Use Alpine's global store, accessible via the window object here
             const notifications = Alpine.store('notifications'); 
 
@@ -26,8 +21,6 @@ export function withApi() {
             } catch (error) {
                 console.error('API Call Failed:', error);
                 notifications.show(error.message || 'An unexpected error occurred.', 'error');
-            } finally {
-                this.isLoading = false;
             }
         }
     }

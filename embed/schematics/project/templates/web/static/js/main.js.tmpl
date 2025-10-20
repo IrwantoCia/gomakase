@@ -2,6 +2,10 @@
 import Alpine from 'alpinejs';
 import components from './component.js';
 
+if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('alpine:notifications');
+}
+
 document.addEventListener('alpine:init', () => {
     // Global store for notifications
     Alpine.store('notifications', {
@@ -9,6 +13,23 @@ document.addEventListener('alpine:init', () => {
         type: 'success', // 'success' or 'error'
         visible: false,
         timer: null,
+
+        init() {
+          // Clear any leftover notifications on page load
+          this.hide();
+          clearTimeout(this.timer);
+        },
+
+        // Force clear immediately
+        clear() {
+          this.visible = false;
+          this.message = '';
+          this.type = '';
+          if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+          }
+        },
 
         show(message, type = 'success') {
             clearTimeout(this.timer);
@@ -21,6 +42,8 @@ document.addEventListener('alpine:init', () => {
 
         hide() {
             this.visible = false;
+            this.message = '';
+            this.type = '';
         }
     });
 
