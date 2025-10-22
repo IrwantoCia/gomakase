@@ -1,0 +1,36 @@
+// Package logger
+package logger
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestNewLogger(t *testing.T) {
+	t.Run("should return a new logger", func(t *testing.T) {
+		logger := NewLogger("debug")
+		assert.NotNil(t, logger)
+	})
+
+	t.Run("should return a new logger with debug level", func(t *testing.T) {
+		logger := NewLogger("debug")
+		logger.Debug("test debug")
+	})
+
+	t.Run("should return a new logger with info level", func(t *testing.T) {
+		logger := NewLogger("info")
+		logger.Info("test info")
+	})
+
+	t.Run("should return a new logger with warn level", func(t *testing.T) {
+		logger := NewLogger("warn")
+		logger.Warn("test warn")
+	})
+
+	t.Run("should return a new logger with error level", func(t *testing.T) {
+		logger := NewLogger("error")
+		logger.Error("test error")
+	})
+}
+

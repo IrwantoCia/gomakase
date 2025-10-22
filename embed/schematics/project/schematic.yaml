@@ -50,7 +50,7 @@ actions:
     template: web/views/layouts/master.html.tmpl
     output: "{{ .Module }}/web/views/layouts/master.html"
   - type: create_file
-    template: web/views/layouts/404.html.tmpl
+    template: web/views/404.html.tmpl
     output: "{{ .Module }}/web/views/404.html"
   - type: create_file
     template: web/views/index.html.tmpl
@@ -77,6 +77,9 @@ actions:
   - type: create_file
     template: internal/shared/logger/logger.go.tmpl
     output: "{{ .Module }}/internal/shared/logger/logger.go"
+  - type: create_file
+    template: internal/shared/logger/logger_test.go.tmpl
+    output: "{{ .Module }}/internal/shared/logger/logger_test.go"
   - type: create_file
     template: internal/shared/middleware/logger.go.tmpl
     output: "{{ .Module }}/internal/shared/middleware/logger.go"

@@ -6,6 +6,7 @@ import (
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Logger interface {
@@ -40,19 +41,34 @@ func NewLogger(level string) Logger {
 	// log file folder will be in the root of the project, despite of the current working directory
 	logFileFolder := "logs"
 	os.MkdirAll(logFileFolder, os.ModePerm)
-	config := zap.Config{
-		Level:            zap.NewAtomicLevelAt(logLevel),
-		Development:      false,
-		Encoding:         "json",
-		EncoderConfig:    zap.NewProductionEncoderConfig(),
-		OutputPaths:      []string{"stdout", logFileFolder + "/app.log"},
-		ErrorOutputPaths: []string{"stderr"},
-	}
+	logFilePath := logFileFolder + "/app.log"
 
-	logger, err := config.Build()
-	if err != nil {
-		panic(err)
+	lumberjackLogger := &lumberjack.Logger{
+		Filename:   logFilePath,
+		MaxSize:    100,  // Max size in MB before file is rotated
+		MaxBackups: 3,    // Max number of old log files to keep
+		MaxAge:     28,   // Max number of days to retain old log files
+		Compress:   true, // Whether to compress old log files
 	}
+	fileSyncer := zapcore.AddSync(lumberjackLogger)
+
+	encoderConfig := zap.NewProductionEncoderConfig()
+	// You might want to make the timestamp readable for file logs
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoder := zapcore.NewJSONEncoder(encoderConfig)
+
+	// Combine console output (stdout) and file output (lumberjack)
+	consoleEncoder := zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig())
+
+	// Create a new core for writing to STDOUT (console) and file
+	core := zapcore.NewTee(
+		zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), logLevel), // Console output
+		zapcore.NewCore(encoder, fileSyncer, logLevel),                        // File output (with rotation)
+	)
+
+	// --- 3. Build the logger from the custom core ---
+	logger := zap.New(core, zap.AddCaller(), zap.ErrorOutput(zapcore.AddSync(os.Stderr)))
+
 	return &zapLogger{
 		logger: logger.Sugar(),
 	}
@@ -87,3 +103,4 @@ func (l *zapLogger) With(fields ...any) Logger {
 func (l *zapLogger) Sync() error {
 	return l.logger.Sync()
 }
+
